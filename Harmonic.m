@@ -8,20 +8,25 @@ classdef Harmonic
     %
     % Create a Projector object for convenience
     %
-    % > P=Projector("F1", "C4v")
+    % > P_C4v=Projector("F1", "C4v")
     %
     % Create the harmonic using the projector to give us the basis for the
-    % E irreducible representation of C4v.  The first two parameters are
-    % the lattice vectors and the last one is the coefficients.  The
-    % exp(1i*90) ensures that the phase is set so that the field is not
-    % zero and the cosine and sines define the orientation of the mode
-    % within the 2D eigenspace of the E irreducible representation.
+    % E irreducible representation of C4v.  The first parameter is the 
+    % standard basis to use and the second is the canonical basis for the 
+    % mode. The third is the mode vector in the canonical basis (second 
+    % parameter).  The exp(1i) ensures that the phase is set so that the 
+    % field is not zero and the cosine and sines define the orientation of
+    % the mode within the 2D eigenspace of the E irreducible 
+    % representation.
     %
-    % > hm=Harmonic([1 0],[0 1], [1 1], P.C4v.E_vec, [cosd(135)*exp(1i*90), sind(135)*exp(1i*90)])
+    % > hm=Harmonic("F1", P_C4v.E, [cosd(135), sind(135)]*exp(1i))
+    %
+    % Plot the harmonic with
+    %
+    % > hm.plot
     %
     % TODO:
     %
-    % At the moment it only works with square lattices.
     
     properties
         % Hilbert space
