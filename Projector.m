@@ -1,11 +1,12 @@
 classdef Projector < dynamicprops & matlab.mixin.CustomDisplay
-    % Projector - Projectors for planar harmonics
+    % Projector - Create a projection operator
     %
-    % Creates a set of projectors for the specified point groups.
+    % Creates a projector for the specified basis and point group.
     %
     % REQUIRED:
     %
-    % The gso package from the MATLAB file exchange if you want to use C6v
+    % if you want to create a C6v projector then you will need the gso 
+    % package from the MATLAB file exchange 
     % https://au.mathworks.com/matlabcentral/fileexchange/55881-gram-schmidt-orthogonalization?s_tid=srchtitle
     %
     % USAGE:
@@ -15,7 +16,7 @@ classdef Projector < dynamicprops & matlab.mixin.CustomDisplay
     % The second parameter is a list of strings of the point groups that you want
     % projectors for.  eg.
     %
-    % > P=Projector({[1; 0] [0; 1] [-1; 0] [0; -1]}, ["C4v", "C6v", "C1v_horz"])
+    % > P=Projector({[1; 0] [0; 1] [-1; 0] [0; -1]}, "C4v")
     %
     % For C6v the basis is
     %
@@ -23,12 +24,12 @@ classdef Projector < dynamicprops & matlab.mixin.CustomDisplay
     %
     % Alternatively you can name a standard basis such as
     %
-    % > P=Projector("F1", ["C4v", "C6v", "C1v_horz"])
+    % > P=Projector("F1", "C4v")
     %
     % or a set of standard bases (Note the use of square brackets in this
     % case)
     %
-    % > P=Projector(["F0" "F1" "F2"], ["C4v", "C6v", "C1v_horz"])
+    % > P=Projector(["F0" "F1" "F2"], "C4v")
     %
     % and for C6v 
     %
@@ -453,7 +454,7 @@ classdef Projector < dynamicprops & matlab.mixin.CustomDisplay
 
                 addprop(hObj, vec_str);
 
-                [hObj.(vec_str), rnk] = frref(hObj.(irr_rep));
+                [hObj.(vec_str), rnk] = rref(hObj.(irr_rep));
                 rnk = length(rnk);
 
                 if rnk~= 0
