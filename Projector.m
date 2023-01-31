@@ -35,6 +35,17 @@ classdef Projector < dynamicprops & matlab.mixin.CustomDisplay
     %
     % > P=Projector("F1_hex", "C6v")
     %
+    % Note that because of the long run time for large bases the
+    % constructor does not automatically build any of the projectors,
+    % instead you need to build them explicitly as
+    %
+    % > P.add_irrep("A1")
+    %
+    % or you can build all of them by telling it to build the change of
+    % coordinates matrix
+    %
+    % > P.add_irrep("U")
+    %
     % Get the A1 projector
     %
     % > P.A1
@@ -48,7 +59,6 @@ classdef Projector < dynamicprops & matlab.mixin.CustomDisplay
     %
     % Get the change of coordinates matrix
     %
-    % > P.create_canonical_basis
     % > P.U
     %
     %   ans =
