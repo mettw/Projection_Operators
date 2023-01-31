@@ -145,8 +145,7 @@ classdef Field < handle
         % This function is used to determine if a vector field has a particular
         % symmetry.
         %
-        % Not really the norm, but I couldn't think of a better name.  This
-        % function returns
+        % This function returns
         %
         % <bra_x|oprtr|ket_x> + <bra_y|oprtr_complement|ket_y> + <bra_z|oprtr|ket_z>
         % --------------------------------------------------------------------------
