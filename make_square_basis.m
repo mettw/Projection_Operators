@@ -1,10 +1,11 @@
 function F = make_square_basis(kx_max, ky_max)
     %F = {};
-    if mod(2*kx_max,2) == 0 && mod(2*ky_max,2) == 0
-        [X,Y] = meshgrid(-2*kx_max+1:2:2*kx_max-1, ...
-            2*ky_max-1:-2:-2*ky_max+1);
+    if mod(kx_max,2) == 0 && mod(ky_max,2) == 0
+        [X,Y] = meshgrid(-kx_max+1:2:kx_max-1, ...
+            ky_max-1:-2:-ky_max+1);
     else
-        [X,Y] = meshgrid(-kx_max:kx_max, ky_max:-1:-ky_max);
+        [X,Y] = meshgrid(-(kx_max-1)/2:(kx_max-1)/2, ...
+            (ky_max-1)/2:-1:-(ky_max-1)/2);
     end
 
     %for kx = 1:size(X,2)
