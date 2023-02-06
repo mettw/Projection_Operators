@@ -192,14 +192,14 @@ classdef Projector < dynamicprops & matlab.mixin.CustomDisplay
                 sz = size(Hilbert_space);
                 hObj.F_len = sz(1)*sz(2);
                 %hObj.F = reshape(int16(Hilbert_space),[hObj.F_len 2]);
-                hObj.F = reshape((Hilbert_space),[hObj.F_len 2]);
+                hObj.F = reshape(int16(Hilbert_space),[hObj.F_len 2]);
             else % Hilbert_space is a cell array of [m,n]
                 if isrow(Hilbert_space)
                     %hObj.F = int16([Hilbert_space{:}].');
-                    hObj.F = ([Hilbert_space{:}].');
+                    hObj.F = int16([Hilbert_space{:}].');
                 else
                     %hObj.F = int16([Hilbert_space{:}]);
-                    hObj.F = ([Hilbert_space{:}]);
+                    hObj.F = int16([Hilbert_space{:}]);
                 end
                 hObj.F_len = length(hObj.F);
             end
