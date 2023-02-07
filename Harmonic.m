@@ -19,7 +19,7 @@ classdef Harmonic
     % the mode within the 2D eigenspace of the E irreducible 
     % representation.
     %
-    % > hm=Harmonic("F1", P_C4v.E, [cosd(135), sind(135)]*exp(1i))
+    % > hm=Harmonic("F1", P_C4v.basis("E"), [cosd(135), sind(135)]*exp(1i))
     %
     % Plot the harmonic with
     %
