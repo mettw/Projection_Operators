@@ -464,7 +464,7 @@ classdef Projector < dynamicprops & matlab.mixin.CustomDisplay
 
                 addprop(hObj, vec_str);
 
-                [hObj.(vec_str), rnk] = rref(hObj.(irr_rep));
+                [hObj.(vec_str), rnk] = frref(hObj.(irr_rep));
                 rnk = length(rnk);
 
                 if rnk~= 0
