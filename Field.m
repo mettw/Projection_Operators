@@ -211,6 +211,26 @@ classdef Field < handle
             view([0 90])
         end
 
+        function plot_norm(obj)
+            figure;
+            surf(obj.x,obj.y,zeros(size(obj.x))+min(real(obj.Ez),[],'all'), obj.norm, ...
+                'EdgeColor','none')
+            hold on;
+            view([0 90])
+            xlabel('$x_1$', 'FontSize', 18, 'Interpreter', 'latex')
+            ylabel('$x_2$', 'FontSize', 18, 'Interpreter', 'latex')
+            set(gca, 'XTick', [obj.x(1,1) 0 obj.x(1,end)])
+            set(gca, 'YTick', [obj.y(end,1) 0 obj.y(1,1)])
+            set(gca, 'LineWidth', 2)
+            set(gca, 'FontSize', 16)
+            grid off
+            box on
+            xlim([obj.x(1,1) obj.x(1,end)])
+            ylim([obj.y(end,1) obj.y(1,1)])
+            pbaspect([1 1 1])
+            view([0 90])
+        end
+
         function quiver(obj, varargin)
 
             if nargin == 2
