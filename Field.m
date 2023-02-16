@@ -189,7 +189,14 @@ classdef Field < handle
         end
 
 
-        function plot(obj)
+        function plot(obj, varargin)
+
+            if nargin == 2
+                step_size = varargin{1};
+            else
+                step_size = 1;
+            end
+
             figure;
             surf(obj.x,obj.y,zeros(size(obj.x))+min(real(obj.Ez),[],'all'), obj.norm, ...
                 'EdgeColor','none')
@@ -206,18 +213,14 @@ classdef Field < handle
             xlim([obj.x(1,1) obj.x(1,end)])
             ylim([obj.y(end,1) obj.y(1,1)])
 
-            quiver3(obj.x,obj.y,zeros(size(obj.y)),real(obj.Ex),real(obj.Ey),real(obj.Ez), 'k')
+            quiver3(obj.x(1:step_size:end),obj.y(1:step_size:end),...
+                zeros(size(obj.y(1:step_size:end))),real(obj.Ex(1:step_size:end)),...
+                real(obj.Ey(1:step_size:end)),real(obj.Ez(1:step_size:end)), 'k')
             pbaspect([1 1 1])
             view([0 90])
         end
 
-        function plot_norm(obj, varargin)
-
-            if nargin == 1
-                step_size = varargin{1}
-            else
-                step_size = 1
-            end
+        function plot_norm(obj)
 
             figure;
             surf(obj.x,obj.y,zeros(size(obj.x))+min(real(obj.Ez),[],'all'), obj.norm, ...
