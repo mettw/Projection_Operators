@@ -120,7 +120,9 @@ classdef Projector < dynamicprops & matlab.mixin.CustomDisplay
         sigma_d_2 = ([-1 0;0 1]);
         sigma_d_3 = ([3/4-1/4 -2*1/2*sqrt(3)/2;-2*1/2*sqrt(3)/2 1/4-3/4]);
         %"mE_1" "mC4_1" "mC4_3" "mC2_1" "msigma_v_x" "msigma_v_y" "msigma_d_d" "msigma_d_a"
-        % Negation of the operators for groups with inversion
+        % Negation of the operators for groups with inversion, since in the
+        % 2D plane inversion is equivalent to a negation of the
+        % coordinates.  ie, in 2D you multiply by [-1 0; 0 -1] == -I.
         mE_1 = -([1 0;0 1]);
         mC4_1 = -([0 -1;1 0]);
         mC4_3 = -([0 1;-1 0]);
@@ -250,6 +252,10 @@ classdef Projector < dynamicprops & matlab.mixin.CustomDisplay
                     hObj.projs = ["A1" "A2" "B1" "B2" ...
                         "E1_11" "E1_12" "E1_21" "E1_22" "E1" ...
                         "E2_11" "E2_12" "E2_21" "E2_22" "E2" "U"];
+                case "d2h"
+                    hObj.ops = ["E_1" "C2_1" "sigma_v_x" "sigma_v_y" ...
+                        "mE_1" "mC2_1" "msigma_v_x" "msigma_v_y"];
+                    hObj.projs = ["Ag" "B1g" "B2g" "B3g" "Au" "B1u" "B2u" "B3u" "U"];
                 case "d4h"
                     hObj.ops = ["E_1" "C4_1" "C4_3" "C2_1" "sigma_v_x" "sigma_v_y" "sigma_d_d" "sigma_d_a" ...
                         "mE_1" "mC4_1" "mC4_3" "mC2_1" "msigma_v_x" "msigma_v_y" "msigma_d_d" "msigma_d_a"];
@@ -363,6 +369,11 @@ classdef Projector < dynamicprops & matlab.mixin.CustomDisplay
                             hObj.U = [hObj.A1_basis hObj.A2_basis ...
                                 hObj.B1_basis hObj.B2_basis ...
                                 hObj.E1_basis hObj.E2_basis];
+                        case "d2h"
+                            hObj.U = [hObj.Ag_basis hObj.B1g_basis ...
+                                hObj.B2g_basis hObj.B3g_basis ...
+                                hObj.Au_basis hObj.B1u_basis hObj.B2u_basis ...
+                                hObj.B3u_basis];
                         case "d4h"
                             hObj.U = [hObj.A1g_basis hObj.A2g_basis ...
                                 hObj.B1g_basis hObj.B2g_basis ...
@@ -617,9 +628,12 @@ classdef Projector < dynamicprops & matlab.mixin.CustomDisplay
                            0   -s    s    s   -s    0    0  s -s   -s  0  s;...
                            1   -c   -c   -c   -c    1   -1  c  c    c -1  c;...
                            2 -2*c -2*c -2*c -2*c    2    0  0  0    0  0  0];
-                case "d4h"
-                    d2 = hObj.get_char_table("C4v");
+                case "d2h"
+                    d2 = hObj.get_char_table("C2v");
                     out = [d2 d2;d2 -d2];
+                case "d4h"
+                    d4 = hObj.get_char_table("C4v");
+                    out = [d4 d4;d4 -d4];
                 otherwise
                     error("Projector.get_char_table(): Unkown group")
             end

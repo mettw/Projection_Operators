@@ -211,7 +211,14 @@ classdef Field < handle
             view([0 90])
         end
 
-        function plot_norm(obj)
+        function plot_norm(obj, varargin)
+
+            if nargin == 1
+                step_size = varargin{1}
+            else
+                step_size = 1
+            end
+
             figure;
             surf(obj.x,obj.y,zeros(size(obj.x))+min(real(obj.Ez),[],'all'), obj.norm, ...
                 'EdgeColor','none')
