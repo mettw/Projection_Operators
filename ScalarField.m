@@ -4,9 +4,9 @@ classdef ScalarField < handle
     % operators.
 
     properties
-        x;
-        y;
-        fn;
+        x; % x coordinates
+        y; % y coordinates
+        fn; % scalar function
         size_x;
         size_y;
         % The Hilbert space used to symmetrise a field
@@ -57,11 +57,34 @@ classdef ScalarField < handle
         % Shift the field to the left and down for cases where the highest
         % symmetry point is not at the center.  This assumes a particular
         % case and is not generally usefull.
-        function out = shift(obj)
-            fn_shifted = [obj.fn(:,(obj.size_x+(obj.size_x-1)/2)/2+1:end-1) ...
-                obj.fn(:,1:(obj.size_x+(obj.size_x-1)/2)/2+1)];
-            fn_shifted = [fn_shifted(((obj.size_y-1)/2-1)/2+1:end-1,:); ...
-                fn_shifted(1:((obj.size_y-1)/2-1)/2+1,:)];
+        function out = shift(obj, varargin)
+
+            switch nargin
+                case 1
+                    fn_shifted = [obj.fn(:,(obj.size_x+(obj.size_x-1)/2)/2+1:end-1) ...
+                        obj.fn(:,1:(obj.size_x+(obj.size_x-1)/2)/2+1)];
+                    fn_shifted = [fn_shifted(((obj.size_y-1)/2-1)/2+1:end-1,:); ...
+                        fn_shifted(1:((obj.size_y-1)/2-1)/2+1,:)];
+                otherwise
+                    shift_x = varargin{1};
+                    shift_y = varargin{2};
+                    if shift_x < 0
+                        shift_x = -shift_x;
+                        fn_shifted = [obj.fn(:,end-shift_x+1:end-1) ...
+                            obj.fn(:,1:1:end-shift_x+1)];
+                    else
+                        fn_shifted = [obj.fn(:,shift_x+1:end-1) ...
+                            obj.fn(:,1:shift_x+1)];
+                    end
+                    if shift_y < 0
+                        shift_y = -shift_y;
+                        fn_shifted = [fn_shifted(end-shift_y+1:end-1,:); ...
+                            fn_shifted(1:end-shift_y+1,:)];
+                    else
+                        fn_shifted = [fn_shifted(shift_y+1:end-1,:); ...
+                            fn_shifted(1:shift_y+1,:)];
+                    end
+            end
 
             out = ScalarField(obj.x,obj.y,fn_shifted,obj.size_x,obj.size_y);
         end
@@ -92,7 +115,8 @@ classdef ScalarField < handle
 
         function plot(obj)
             figure;
-            surf(obj.x,obj.y,zeros(size(obj.x)), obj.fn, 'EdgeColor','none')
+            %surf(obj.x,obj.y,zeros(size(obj.x)), obj.fn, 'EdgeColor','none')
+            surf(obj.x,obj.y,obj.fn, obj.fn, 'EdgeColor','none')
             hold on;
             view([0 90])
             xlabel('$x_1$', 'FontSize', 18, 'Interpreter', 'latex')
