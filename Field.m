@@ -287,6 +287,29 @@ classdef Field < handle
             view([0 90])
         end
 
+        function plot_norm_rwb(obj)
+
+            figure;
+            surf(obj.x,obj.y,zeros(size(obj.x))+min(real(obj.Ez),[],'all'), ...
+                sign(angle(real(obj.Ex)+1i*(obj.Ey))).*obj.norm, ...
+                'EdgeColor','none')
+            hold on;
+            view([0 90])
+            xlabel('$x_1$', 'FontSize', 18, 'Interpreter', 'latex')
+            ylabel('$x_2$', 'FontSize', 18, 'Interpreter', 'latex')
+            set(gca, 'XTick', [obj.x(1,1) 0 obj.x(1,end)])
+            set(gca, 'YTick', [obj.y(end,1) 0 obj.y(1,1)])
+            set(gca, 'LineWidth', 2)
+            set(gca, 'FontSize', 16)
+            grid off
+            box on
+            xlim([obj.x(1,1) obj.x(1,end)])
+            ylim([obj.y(end,1) obj.y(1,1)])
+            pbaspect([1 1 1])
+            view([0 90])
+
+        end
+
         function quiver(obj, varargin)
 
             if nargin == 2
@@ -308,6 +331,51 @@ classdef Field < handle
             xlim([obj.x(1,1) obj.x(1,end)])
             ylim([obj.y(end,1) obj.y(1,1)])
             axis equal
+        end
+
+        function out = get_projection(obj, oprtr, oprtr_complement)
+
+            sym_field = obj.symmetrise;
+            
+            % Check that the projectors are of the right size
+            if size(oprtr,2) ~= length(sym_field.Ex(:))
+                error(['projection(): First argument does not have the same number ' ...
+                    'of columns as the number of elements in the Ex field.']);
+            end
+            if size(oprtr,2) ~= length(sym_field.Ez(:))
+                error(['norm_vec(): First argument does not have the same number ' ...
+                    'of columns as the number of elements in the Ez field.']);
+            end
+            if size(oprtr_complement,2) ~= length(sym_field.Ey(:))
+                error(['norm_vec(): Second argument does not have the same number ' ...
+                    'of columns as the number of elements in the Ey field.']);
+            end
+
+            % apply the projectors to the field components.
+            % need to avoid overflow errors with using single precision for memory
+            % saving.
+            newEx = double(oprtr)*double(sym_field.Ex(:));
+            newEx = reshape(newEx, [obj.size_x obj.size_y]);
+            newEy = double(oprtr_complement)*double(sym_field.Ey(:));
+            newEy = reshape(newEy, [obj.size_x obj.size_y]);
+            newEz = double(oprtr)*double(sym_field.Ez(:));
+            newEz = reshape(newEz, [obj.size_x obj.size_y]);
+
+            % Desymmetrise the field
+            [X,Y] = meshgrid(-(sym_field.size_x-1)/2:(sym_field.size_x-1)/2, ...
+                (sym_field.size_y-1)/2:-1:-(sym_field.size_y-1)/2);
+
+            % WrapToPi() makes the results easier to analyse.
+            ang_ref = -wrapToPi(angle(X+1i*Y));
+
+
+            xsym = newEx.*cos(ang_ref) + newEy.*sin(ang_ref);
+
+            ysym = -newEx.*sin(wrapToPi(ang_ref)) + newEy.*cos(wrapToPi(ang_ref));
+
+            % Create Field object
+            out = Field(sym_field.x, sym_field.y, xsym, ysym, newEz, ...
+                sym_field.size_x, sym_field.size_y);
         end
     end
 end
