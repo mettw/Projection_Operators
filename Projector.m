@@ -83,7 +83,10 @@ classdef Projector < dynamicprops & matlab.mixin.CustomDisplay
     %
     % * Add more point groups as needed
     
-    properties (GetAccess='private', SetAccess='private')
+
+    % The properties and methods are all public so that you can easily 
+    % create subclasses of this class.
+    properties
         % Hilbert space
         % These are the (p,q) values for the vectors
         % va{k} = p\va{b}_1+q\va{b}_2
@@ -131,8 +134,7 @@ classdef Projector < dynamicprops & matlab.mixin.CustomDisplay
         msigma_v_y = -([-1 0;0 1]);
         msigma_d_d = -([0 1;1 0]);
         msigma_d_a = -([0 -1;-1 0]);
-    end
-    properties (SetAccess='private')
+
         point_group;
         all_representations = [];
     end
@@ -549,14 +551,6 @@ classdef Projector < dynamicprops & matlab.mixin.CustomDisplay
         function out = group(hObj)
             out = hObj.point_group;
         end
-    end
-    methods (Access = private)
-
-        %% 
-        %
-        % Private functions
-        %
-
 
 
         function out = get_char_table(hObj, group_name)

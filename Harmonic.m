@@ -28,6 +28,8 @@ classdef Harmonic
     % TODO:
     %
     
+    % The properties and methods are all public so that you can easily 
+    % create subclasses of this class.
     properties
         % Hilbert space
         F;
@@ -50,9 +52,7 @@ classdef Harmonic
 
         % vector of Fourier coefficients
         harm;
-    end
 
-    properties (GetAccess='private', SetAccess='private')
         is_hexagonal = false;
         X;
         Y;
@@ -354,9 +354,7 @@ classdef Harmonic
                 view([0 90])
             end
         end
-    end
 
-    methods (Access = private)
         % create the mesh grid and K vector
         function [X,Y,K,vX,vY,vK] = plot_setup(hObj)
             [X,Y,K,vX,vY,vK] = hObj.plot_setup_k([0 0]);
