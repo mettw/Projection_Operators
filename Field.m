@@ -239,6 +239,9 @@ classdef Field < handle
 
             if nargin == 2
                 step_size = varargin{1};
+            elseif nargin > 2
+                step_size = varargin{1};
+                quiver_varargin = varargin(2:end);
             else
                 step_size = 1;
             end
@@ -261,7 +264,7 @@ classdef Field < handle
 
             quiver3(obj.x(1:step_size:end),obj.y(1:step_size:end),...
                 zeros(size(obj.y(1:step_size:end))),real(obj.Ex(1:step_size:end)),...
-                real(obj.Ey(1:step_size:end)),real(obj.Ez(1:step_size:end)), 'k')
+                real(obj.Ey(1:step_size:end)),real(obj.Ez(1:step_size:end)), 'k', quiver_varargin{:})
             pbaspect([1 1 1])
             view([0 90])
         end
