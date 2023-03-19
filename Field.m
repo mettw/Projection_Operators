@@ -72,72 +72,6 @@ classdef Field < handle
             end
         end
 
-        % Shift the field to the left and down for cases where the highest
-        % symmetry point is not at the center.  This assumes a particular
-        % case and is not generally usefull.
-        function out = shift(obj, varargin)
-
-            switch nargin
-                case 1
-                    Ex_shifted = [obj.Ex(:,(obj.size_x+(obj.size_x-1)/2)/2+1:end-1) ...
-                        obj.Ex(:,1:(obj.size_x+(obj.size_x-1)/2)/2+1)];
-                    Ey_shifted = [obj.Ey(:,(obj.size_x+(obj.size_x-1)/2)/2+1:end-1) ...
-                        obj.Ey(:,1:(obj.size_x+(obj.size_x-1)/2)/2+1)];
-                    Ez_shifted = [obj.Ez(:,(obj.size_x+(obj.size_x-1)/2)/2+1:end-1) ...
-                        obj.Ez(:,1:(obj.size_x+(obj.size_x-1)/2)/2+1)];
-                    Ex_shifted = [Ex_shifted(((obj.size_y-1)/2-1)/2+1:end-1,:); ...
-                        Ex_shifted(1:((obj.size_y-1)/2-1)/2+1,:)];
-                    Ey_shifted = [Ey_shifted(((obj.size_y-1)/2-1)/2+1:end-1,:); ...
-                        Ey_shifted(1:((obj.size_y-1)/2-1)/2+1,:)];
-                    Ez_shifted = [Ez_shifted(((obj.size_y-1)/2-1)/2+1:end-1,:); ...
-                        Ez_shifted(1:((obj.size_y-1)/2-1)/2+1,:)];
-                otherwise
-                    shift_x = varargin{1};
-                    shift_y = varargin{2};
-                    if shift_x < 0
-                        shift_x = -shift_x;
-                        Ex_shifted = [obj.Ex(:,end-shift_x+1:end-1) ...
-                            obj.Ex(:,1:end-shift_x+1)];
-                        Ey_shifted = [obj.Ey(:,end-shift_x+1:end-1) ...
-                            obj.Ey(:,1:end-shift_x+1)];
-                        Ez_shifted = [obj.Ez(:,end-shift_x+1:end-1) ...
-                            obj.Ez(:,1:end-shift_x+1)];
-                    else
-                        Ex_shifted = [obj.Ex(:,shift_x+1:end-1) ...
-                            obj.Ex(:,1:shift_x+1)];
-                        Ey_shifted = [obj.Ey(:,shift_x+1:end-1) ...
-                            obj.Ey(:,1:shift_x+1)];
-                        Ez_shifted = [obj.Ez(:,shift_x+1:end-1) ...
-                            obj.Ez(:,1:shift_x+1)];
-                    end
-                    if shift_y < 0
-                        shift_y = -shift_y;
-                        Ex_shifted = [Ex_shifted(end-shift_y+1:end-1,:); ...
-                            Ex_shifted(1:end-shift_y+1,:)];
-                        Ey_shifted = [Ey_shifted(end-shift_y+1:end-1,:); ...
-                            Ey_shifted(1:end-shift_y+1,:)];
-                        Ez_shifted = [Ez_shifted(end-shift_y+1:end-1,:); ...
-                            Ez_shifted(1:end-shift_y+1,:)];
-                    else
-                        Ex_shifted = [Ex_shifted(shift_y+1:end-1,:); ...
-                            Ex_shifted(1:shift_y+1,:)];
-                        Ey_shifted = [Ey_shifted(shift_y+1:end-1,:); ...
-                            Ey_shifted(1:shift_y+1,:)];
-                        Ez_shifted = [Ez_shifted(shift_y+1:end-1,:); ...
-                            Ez_shifted(1:shift_y+1,:)];
-                    end
-                    %Ex_shifted = [Ex_shifted(((obj.size_y-1)/2-1)/2+1:end-1,:); ...
-                    %    Ex_shifted(1:((obj.size_y-1)/2-1)/2+1,:)];
-                    %Ey_shifted = [Ey_shifted(((obj.size_y-1)/2-1)/2+1:end-1,:); ...
-                    %    Ey_shifted(1:((obj.size_y-1)/2-1)/2+1,:)];
-                    %Ez_shifted = [Ez_shifted(((obj.size_y-1)/2-1)/2+1:end-1,:); ...
-                    %    Ez_shifted(1:((obj.size_y-1)/2-1)/2+1,:)];
-            end
-
-
-            out = Field(obj.x,obj.y,Ex_shifted,Ey_shifted,Ez_shifted,obj.size_x,obj.size_y);
-        end
-
         % This fuction converts a vector field into a form that can be tested for
         % symmetry.  It changes the basis for each point so that the x-axis lies
         % along the line from the origin to that particular point.
@@ -250,13 +184,13 @@ classdef Field < handle
             surf(obj.x,obj.y,zeros(size(obj.x))+min(real(obj.Ez),[],'all'), obj.norm, ...
                 'EdgeColor','none')
             hold on;
+            set(gca, 'FontSize', 20)
             view([0 90])
-            xlabel('$x_1$', 'FontSize', 18, 'Interpreter', 'latex')
-            ylabel('$x_2$', 'FontSize', 18, 'Interpreter', 'latex')
+            xlabel('x', 'FontSize', 24)
+            ylabel('y', 'FontSize', 24)
             set(gca, 'XTick', [obj.x(1,1) 0 obj.x(1,end)])
             set(gca, 'YTick', [obj.y(end,1) 0 obj.y(1,1)])
             set(gca, 'LineWidth', 2)
-            set(gca, 'FontSize', 16)
             grid off
             box on
             xlim([obj.x(1,1) obj.x(1,end)])
@@ -290,20 +224,31 @@ classdef Field < handle
             view([0 90])
         end
 
-        function plot_norm_rwb(obj)
+        % plot only a single component of the electric field.
+        function plot_component(obj, component)
+            
+            switch lower(component)
+                case "x"
+                    vec = obj.Ex;
+                case "y"
+                    vec = obj.Ey;
+                case "z"
+                    vec = obj.Ez;
+                otherwise
+                    error("Component must be either ""x"", ""y"" or ""z""");
+            end
 
             figure;
             surf(obj.x,obj.y,zeros(size(obj.x))+min(real(obj.Ez),[],'all'), ...
-                sign(angle(real(obj.Ex)+1i*(obj.Ey))).*obj.norm, ...
-                'EdgeColor','none')
+                real(vec), 'EdgeColor','none')
             hold on;
+            set(gca, 'FontSize', 18)
             view([0 90])
-            xlabel('$x_1$', 'FontSize', 18, 'Interpreter', 'latex')
-            ylabel('$x_2$', 'FontSize', 18, 'Interpreter', 'latex')
+            xlabel('x', 'FontSize', 20)
+            ylabel('y', 'FontSize', 20)
             set(gca, 'XTick', [obj.x(1,1) 0 obj.x(1,end)])
             set(gca, 'YTick', [obj.y(end,1) 0 obj.y(1,1)])
             set(gca, 'LineWidth', 2)
-            set(gca, 'FontSize', 16)
             grid off
             box on
             xlim([obj.x(1,1) obj.x(1,end)])
@@ -336,6 +281,8 @@ classdef Field < handle
             axis equal
         end
 
+        % Apply a projector to the field and return the resultant field as
+        % a new Field object.  That is, return: |psi'> = P|psi>
         function out = get_projection(obj, oprtr, oprtr_complement)
 
             sym_field = obj.symmetrise;
