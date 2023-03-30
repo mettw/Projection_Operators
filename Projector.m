@@ -273,6 +273,154 @@ classdef Projector < dynamicprops & matlab.mixin.CustomDisplay
         end
 
         function add_irrep(hObj, irrep)
+            % 'true' means normalise the matrix
+            hObj.add_irrep_private(irrep, true);
+        end
+
+        % The method add_irrep() takes a lot of time because it uses
+        % reduction to row echelon form (ffref()) to normalise the
+        % matrices.  While this has the advantage of finding the basis for
+        % the projectors we usually don't need to know what the basis is
+        % and so it is a waste of resources to find the basis every time.
+        % It is especially a problem for projectors with a large basis (say
+        % 150x150) since it takes too long to create the projector.
+        %
+        % I am therefore adding this method that uses an alternative way to
+        % normalise the projectors without having to find the basis.
+        function add_irrep_fast(hObj, irrep)
+            if irrep == "U"
+                error("Can't add U with add_irrep_fast() as that requires finding the basis.");
+            end
+
+            % 'false' means don't normalise the matrix
+            hObj.add_irrep_private(irrep, false);
+
+            % Fast normalisation
+            % ------------------
+            %
+            % If the normalisation factor is 'g' and the non-normalised
+            % matrix is 'B' then, for any i
+            % 
+            % g = B(i,i)/(B(i,:)*B(:,i))
+            %
+            % but we need to make sure that the value of i chosen is one
+            % for which the result is non-zero, so we get
+
+            g = hObj.(irrep)./(hObj.(irrep)*hObj.(irrep));
+            g = g(find(g,1)); % g becomes a scalar here
+
+            hObj.(irrep) = g*hObj.(irrep);
+
+        end
+
+        %%
+        %
+        % Sundry functions
+        %
+
+        function basis = basis(hObj, varargin)
+            if nargin == 1
+                basis = hObj.F;
+            else
+                basis = hObj.(strcat(varargin{1}, "_basis"));
+            end
+        end
+
+        function space = hilbert_space(hObj)
+            space = hObj.F;
+        end
+        
+        function out = group(hObj)
+            out = hObj.point_group;
+        end
+
+
+        function out = get_char_table(hObj, group_name)
+            % http://gernot-katzers-spice-pages.com/character_tables/index.html
+            %
+            % R. McWeeny, Symmetry; an introduction to group theory and 
+            % its applications. (Pergamon Press; distributed in the 
+            % Western Hemisphere by Macmillan, Oxford, New York,, 1963).
+
+            switch lower(group_name)
+                case "c1"
+                    out = 1;
+                case {"cs", "cs_hex", "c1v", "c1v_vert" "c2"}
+                    out = [1  1; ...
+                        1 -1];
+                case "c2v"
+                    out = [1  1  1  1;...
+                           1  1 -1 -1;...
+                           1 -1  1 -1;...
+                           1 -1 -1  1];
+                case "c4"
+                    out = [1  1  1  1;...
+                           1 -1  -1   1;...
+                           1  1i -1i -1;...
+                           1 -1i  1i -1;...
+                           2  0   0  -2];
+                case "c3v"
+                    c=1/2;
+                    s=sqrt(3)/2;
+                    %      1  2  3  4  5  6 
+                    out = [1  1  1  1  1  1;...
+                           1  1  1  -1 -1 -1 ;...
+
+                           1 -c -c  1 -c -c;...
+                           0 -s  s  0 -s  s;...
+                           0  s -s  0 -s  s;...
+                           1 -c -c -1  c  c;...
+                           2 -1 -1  0  0  0 ];
+                case "c4v"
+                    %      1  2  3  4  5  6  7  8
+                    out = [1  1  1  1  1  1  1  1;...
+                           1  1  1  1 -1 -1 -1 -1;...
+                           1 -1 -1  1  1  1 -1 -1;...
+                           1 -1 -1  1 -1 -1  1  1;...
+
+                           1  0  0 -1  1 -1  0  0;...
+                           0 -1  1  0  0  0  1 -1;...
+                           0  1 -1  0  0  0  1 -1;...
+                           1  0  0 -1 -1  1  0  0;...
+                           2  0  0 -2  0  0  0  0];
+                case "c6v"
+                    % "E_1" "C6_1" "C6_5" "C3_1" "C3_2" "C2_1" "sigma_v_1" "sigma_v_2" "sigma_v_3" ...
+                    % "sigma_d_1" "sigma_d_2" "sigma_d_3"
+                    c=1/2;
+                    s=sqrt(3)/2;
+                    out = [1    1   1     1    1    1    1  1  1    1  1  1;...
+                           1    1   1     1    1    1   -1 -1 -1   -1 -1 -1;...
+                           1   -1  -1     1    1   -1    1  1  1   -1 -1 -1;...
+                           1   -1  -1     1    1   -1   -1 -1 -1    1  1  1;...
+
+                           1    c   c    -c   -c   -1    1 -c -c    c -1  c;...
+                           0   -s   s    -s    s    0    0  s -s    s  0 -s;...
+                           0    s  -s     s   -s    0    0  s -s    s  0  s;...
+                           1    c   c    -c   -c   -1   -1  c  c   -c  1 -c;...
+                           2  2*c 2*c  -2*c -2*c   -2    0  0  0    0  0  0;...
+
+                           1   -c   -c   -c   -c    1    1 -c -c   -c  1 -c;...
+                           0    s   -s   -s    s    0    0  s -s   -s  0  s;...
+                           0   -s    s    s   -s    0    0  s -s   -s  0  s;...
+                           1   -c   -c   -c   -c    1   -1  c  c    c -1  c;...
+                           2 -2*c -2*c -2*c -2*c    2    0  0  0    0  0  0];
+                case "d2h"
+                    d2 = hObj.get_char_table("C2v");
+                    out = [d2 d2;d2 -d2];
+                case "d4h"
+                    d4 = hObj.get_char_table("C4v");
+                    out = [d4 d4;d4 -d4];
+                otherwise
+                    error("Projector.get_char_table(): Unkown group")
+            end
+        end
+
+
+    end
+
+    methods (Access = protected)
+
+        function add_irrep_private(hObj, irrep, normalise)
         
             char_table = hObj.get_char_table(hObj.point_group);
 
@@ -296,7 +444,9 @@ classdef Projector < dynamicprops & matlab.mixin.CustomDisplay
                         get_representation;
                         add_representation(char_table(:,sym_op));
                     end
-                    create_canonical_basis;
+                    if normalise
+                        create_canonical_basis;
+                    end
                 else
                     % allocate memory for all not already calculated
                     for p = hObj.projs(1:end-1)
@@ -309,12 +459,16 @@ classdef Projector < dynamicprops & matlab.mixin.CustomDisplay
                                 get_representation;
                                 add_representation(char_table(:,sym_op));
                             end
-                            create_canonical_basis;
+                            if normalise
+                                create_canonical_basis;
+                            end
                         end
                     end
                     % Now add U
                     irrep_num = length(hObj.projs);
-                    create_canonical_basis;
+                    if normalise
+                        create_canonical_basis;
+                    end
                 end
 
 
@@ -531,112 +685,7 @@ classdef Projector < dynamicprops & matlab.mixin.CustomDisplay
                 end
             end
         end
-        %%
-        %
-        % Sundry functions
-        %
 
-        function basis = basis(hObj, varargin)
-            if nargin == 1
-                basis = hObj.F;
-            else
-                basis = hObj.(strcat(varargin{1}, "_basis"));
-            end
-        end
-
-        function space = hilbert_space(hObj)
-            space = hObj.F;
-        end
-        
-        function out = group(hObj)
-            out = hObj.point_group;
-        end
-
-
-        function out = get_char_table(hObj, group_name)
-            % http://gernot-katzers-spice-pages.com/character_tables/index.html
-            %
-            % R. McWeeny, Symmetry; an introduction to group theory and 
-            % its applications. (Pergamon Press; distributed in the 
-            % Western Hemisphere by Macmillan, Oxford, New York,, 1963).
-
-            switch lower(group_name)
-                case "c1"
-                    out = 1;
-                case {"cs", "cs_hex", "c1v", "c1v_vert" "c2"}
-                    out = [1  1; ...
-                        1 -1];
-                case "c2v"
-                    out = [1  1  1  1;...
-                           1  1 -1 -1;...
-                           1 -1  1 -1;...
-                           1 -1 -1  1];
-                case "c4"
-                    out = [1  1  1  1;...
-                           1 -1  -1   1;...
-                           1  1i -1i -1;...
-                           1 -1i  1i -1;...
-                           2  0   0  -2];
-                case "c3v"
-                    c=1/2;
-                    s=sqrt(3)/2;
-                    %      1  2  3  4  5  6 
-                    out = [1  1  1  1  1  1;...
-                           1  1  1  -1 -1 -1 ;...
-
-                           1 -c -c  1 -c -c;...
-                           0 -s  s  0 -s  s;...
-                           0  s -s  0 -s  s;...
-                           1 -c -c -1  c  c;...
-                           2 -1 -1  0  0  0 ];
-                case "c4v"
-                    %      1  2  3  4  5  6  7  8
-                    out = [1  1  1  1  1  1  1  1;...
-                           1  1  1  1 -1 -1 -1 -1;...
-                           1 -1 -1  1  1  1 -1 -1;...
-                           1 -1 -1  1 -1 -1  1  1;...
-
-                           1  0  0 -1  1 -1  0  0;...
-                           0 -1  1  0  0  0  1 -1;...
-                           0  1 -1  0  0  0  1 -1;...
-                           1  0  0 -1 -1  1  0  0;...
-                           2  0  0 -2  0  0  0  0];
-                case "c6v"
-                    % "E_1" "C6_1" "C6_5" "C3_1" "C3_2" "C2_1" "sigma_v_1" "sigma_v_2" "sigma_v_3" ...
-                    % "sigma_d_1" "sigma_d_2" "sigma_d_3"
-                    c=1/2;
-                    s=sqrt(3)/2;
-                    out = [1    1   1     1    1    1    1  1  1    1  1  1;...
-                           1    1   1     1    1    1   -1 -1 -1   -1 -1 -1;...
-                           1   -1  -1     1    1   -1    1  1  1   -1 -1 -1;...
-                           1   -1  -1     1    1   -1   -1 -1 -1    1  1  1;...
-
-                           1    c   c    -c   -c   -1    1 -c -c    c -1  c;...
-                           0   -s   s    -s    s    0    0  s -s    s  0 -s;...
-                           0    s  -s     s   -s    0    0  s -s    s  0  s;...
-                           1    c   c    -c   -c   -1   -1  c  c   -c  1 -c;...
-                           2  2*c 2*c  -2*c -2*c   -2    0  0  0    0  0  0;...
-
-                           1   -c   -c   -c   -c    1    1 -c -c   -c  1 -c;...
-                           0    s   -s   -s    s    0    0  s -s   -s  0  s;...
-                           0   -s    s    s   -s    0    0  s -s   -s  0  s;...
-                           1   -c   -c   -c   -c    1   -1  c  c    c -1  c;...
-                           2 -2*c -2*c -2*c -2*c    2    0  0  0    0  0  0];
-                case "d2h"
-                    d2 = hObj.get_char_table("C2v");
-                    out = [d2 d2;d2 -d2];
-                case "d4h"
-                    d4 = hObj.get_char_table("C4v");
-                    out = [d4 d4;d4 -d4];
-                otherwise
-                    error("Projector.get_char_table(): Unkown group")
-            end
-        end
-
-
-    end
-
-    methods (Access = protected)
         function propgrp = getPropertyGroups(hObj)
             propgrp = matlab.mixin.util.PropertyGroup(hObj.projs);
         end
