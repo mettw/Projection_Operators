@@ -307,7 +307,7 @@ classdef Projector < dynamicprops & matlab.mixin.CustomDisplay
             % for which the result is non-zero, so we get
 
             g = hObj.(irrep)./(hObj.(irrep)*hObj.(irrep));
-            g = g(find(g,1)); % g becomes a scalar here
+            g = g(find(~isnan(g) & g ~= 0, 1)); % g becomes a scalar here
 
             hObj.(irrep) = g*hObj.(irrep);
 
