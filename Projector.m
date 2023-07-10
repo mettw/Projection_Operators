@@ -164,6 +164,18 @@ classdef Projector < dynamicprops & matlab.mixin.CustomDisplay
                         case "f4"
                             hObj.F = [hObj.F; {[2; 1]; [1; 2]; [-1; 2]; [-2; 1]; ...
                                 [-2; -1]; [-1; -2]; [1; -2]; [2; -1]}];
+                        case "f5"
+                            hObj.F = [hObj.F; {[2; 2]; [-2; 2]; [-2; -2]; [2; -2]}];
+                        case "f6"
+                            hObj.F = [hObj.F; {[3; 0]; [0; 3]; [-3; 0]; [0; -3]}];
+                        case "f7"
+                            hObj.F = [hObj.F; {[3; 1]; [1; 3]; [-1; 3]; [-3; 1]; ...
+                                [-3; -1]; [-1; -3]; [1; -3]; [3; -1]}];
+                        case "f8"
+                            hObj.F = [hObj.F; {[3; 2]; [2; 3]; [-2; 3]; [-3; 2]; ...
+                                [-3; -2]; [-2; -3]; [2; -3]; [3; -2]}];
+                        case "f9"
+                            hObj.F = [hObj.F; {[3; 3]; [-3; 3]; [-3; -3]; [3; -3]}];
                         case "f0_hex"
                             hObj.b_vecs = [1/2 1; sqrt(3)/2 0];
                             hObj.F = [hObj.F; {[0; 0]}];
