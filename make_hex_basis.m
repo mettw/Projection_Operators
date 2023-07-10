@@ -16,6 +16,7 @@ function [F, Kx, Ky, B] = make_hex_basis(m_max, varargin)
 
     B = [b1.' b2.'];
 
+    % Scale all results down to a specified periodicity.
     if nargin ==3
         F = F/m_max*varargin{2};
         Kx = Kx/m_max*varargin{2};
