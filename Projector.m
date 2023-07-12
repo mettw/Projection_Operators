@@ -204,13 +204,19 @@ classdef Projector < dynamicprops & matlab.mixin.CustomDisplay
                 %hObj.F = int16([hObj.F{:}].');
                 hObj.F = ([hObj.F{:}].');
                 hObj.F_len = length(hObj.F);
-            elseif isfloat(Hilbert_space) % a square array of values
-                %sz = size(Hilbert_space);
-                %hObj.F_len = sz(1)*sz(2);
-                %hObj.F = reshape(int16(Hilbert_space),[hObj.F_len 2]);
-                %hObj.F = reshape((Hilbert_space),[hObj.F_len 2]);
+            elseif isfloat(Hilbert_space) & (lower(point_group) == "c6v" ...
+                    || lower(point_group) == "c6" || lower(point_group) == "c3v" ...
+                    || lower(point_group) == "c3") %#ok<AND2>
+                 % a hex array of values
                 hObj.F = Hilbert_space;
                 hObj.F_len = length(hObj.F);
+            elseif isfloat(Hilbert_space) % a square array of values
+                sz = size(Hilbert_space);
+                hObj.F_len = sz(1)*sz(2);
+                %hObj.F = reshape(int16(Hilbert_space),[hObj.F_len 2]);
+                hObj.F = reshape((Hilbert_space),[hObj.F_len 2]);
+                %hObj.F = Hilbert_space;
+                %hObj.F_len = length(hObj.F);
             else % Hilbert_space is a cell array of [m,n]
                 if isrow(Hilbert_space)
                     %hObj.F = int16([Hilbert_space{:}].');
