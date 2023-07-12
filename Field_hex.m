@@ -3,8 +3,10 @@ classdef Field_hex < Field
     % Handles the orientation etc of vector fields for use with projection
     % operators.
     %
-    % This version does not store the data as a square array, so that it
-    % can be used with hexagonal and any general cut plane.
+    % This version does not store the data as a square array, so it
+    % can be used with hexagonal and any general cut plane.  It should be
+    % possible to merge this with the standard Field object, but I don't
+    % have time to work on it at the moment.
 
     properties
         kx;
