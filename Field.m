@@ -178,6 +178,7 @@ classdef Field < handle
                 quiver_varargin = varargin(2:end);
             else
                 step_size = 1;
+                quiver_varargin = {'k'};
             end
 
             figure;
