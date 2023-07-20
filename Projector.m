@@ -238,6 +238,9 @@ classdef Projector < dynamicprops & matlab.mixin.CustomDisplay
                 case "cs"
                     hObj.ops = ["E_1" "sigma_d_d"];
                     hObj.projs = ["Ap" "App" "U"];
+                case "cs_a"
+                    hObj.ops = ["E_1" "sigma_d_a"];
+                    hObj.projs = ["Ap" "App" "U"];
                 case "cs_hex"
                     hObj.ops = ["E_1" "sigma_d_1"];
                     hObj.projs = ["Ap" "App" "U"];
@@ -269,6 +272,10 @@ classdef Projector < dynamicprops & matlab.mixin.CustomDisplay
                     hObj.projs = ["A" "B" "E_11" "E_22" "E" "U"];
                 case "c4v"
                     hObj.ops = ["E_1" "C4_1" "C4_3" "C2_1" "sigma_v_x" "sigma_v_y" "sigma_d_d" "sigma_d_a"];
+                    hObj.y_vec = [1 1 1 1 -1 -1 -1 -1];
+                    hObj.projs = ["A1" "A2" "B1" "B2" "E_11" "E_12" "E_21" "E_22" "E" "U"];
+                case "c4v_d"
+                    hObj.ops = ["E_1" "C4_1" "C4_3" "C2_1" "sigma_d_d" "sigma_d_a" "sigma_v_x" "sigma_v_y"];
                     hObj.y_vec = [1 1 1 1 -1 -1 -1 -1];
                     hObj.projs = ["A1" "A2" "B1" "B2" "E_11" "E_12" "E_21" "E_22" "E" "U"];
                 case "c6v"
@@ -369,15 +376,10 @@ classdef Projector < dynamicprops & matlab.mixin.CustomDisplay
             switch lower(group_name)
                 case "c1"
                     out = 1;
-                case {"cs", "cs_hex", "c1v", "c1v_vert" "c2"}
+                case {"cs", "cs_a", "cs_hex", "c1v", "c1v_vert" "c2"}
                     out = [1  1; ...
                         1 -1];
-                case "c2v"
-                    out = [1  1  1  1;...
-                           1  1 -1 -1;...
-                           1 -1  1 -1;...
-                           1 -1 -1  1];
-                case "c2v_d"
+                case {"c2v", "c2v_d"}
                     out = [1  1  1  1;...
                            1  1 -1 -1;...
                            1 -1  1 -1;...
@@ -400,7 +402,7 @@ classdef Projector < dynamicprops & matlab.mixin.CustomDisplay
                            0  s -s  0 -s  s;...
                            1 -c -c -1  c  c;...
                            2 -1 -1  0  0  0 ];
-                case "c4v"
+                case {"c4v", "c4v_d"}
                     %      1  2  3  4  5  6  7  8
                     out = [1  1  1  1  1  1  1  1;...
                            1  1  1  1 -1 -1 -1 -1;...
@@ -518,16 +520,13 @@ classdef Projector < dynamicprops & matlab.mixin.CustomDisplay
                     switch lower(hObj.point_group)
                         case "c1"
                             hObj.U = hObj.A_basis;
-                        case "cs"
+                        case {"cs", "cs_a"}
                             hObj.U = [hObj.Ap_basis hObj.App_basis];
                         case {"c1v", "c1v_vert"}
                             hObj.U = [hObj.A1_basis hObj.A2_basis];
                         case "c2"
                             hObj.U = [hObj.A_basis hObj.B_basis];
-                        case "c2v"
-                            hObj.U = [hObj.A1_basis hObj.A2_basis ...
-                                hObj.B1_basis hObj.B2_basis];
-                        case "c2v_d"
+                        case {"c2v", "c2v_d"}
                             hObj.U = [hObj.A1_basis hObj.A2_basis ...
                                 hObj.B1_basis hObj.B2_basis];
                         case "c4"
@@ -536,7 +535,7 @@ classdef Projector < dynamicprops & matlab.mixin.CustomDisplay
                         case "c3v"
                             hObj.U = [hObj.A1_basis hObj.A2_basis ...
                                 hObj.E_basis];
-                        case "c4v"
+                        case {"c4v", "c4v_d"}
                             hObj.U = [hObj.A1_basis hObj.A2_basis ...
                                 hObj.B1_basis hObj.B2_basis ...
                                 hObj.E_basis];

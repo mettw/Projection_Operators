@@ -112,6 +112,22 @@ classdef ScalarField < handle
                 (double(obj.fn(:))'*double(obj.fn(:)));
         end
 
+        function out = projection2(obj,oprtr, normoprtr)
+
+            if size(oprtr,2) ~= length(obj.fn(:))
+                error(['projection(): First argument does not have the same number ' ...
+                    'of columns as the number of elements in the Ex field.']);
+            end
+            if size(normoprtr,2) ~= length(obj.fn(:))
+                error(['projection(): First argument does not have the same number ' ...
+                    'of columns as the number of elements in the Ex field.']);
+            end
+
+            % need to avoid overflow errors with using single precision for memory
+            % saving.
+            out = (double(obj.fn(:))'*double(oprtr)*double(obj.fn(:)))/ ...
+                (double(obj.fn(:))'*double(normoprtr)*double(obj.fn(:)));
+        end
 
         function plot(obj)
             figure;
