@@ -170,8 +170,8 @@ classdef Harmonic_time < Harmonic
                 ylim([-hObj.b_len(2)/2 hObj.b_len(2)/2])
             end
 
-            pbaspect([1 1 1])
             %}
+            pbaspect([1 1 1])
         end
     end
 end
