@@ -72,7 +72,7 @@ classdef ScalarField < handle
                         shift_x = -shift_x;
                         fn_shifted = [obj.fn(:,end-shift_x+1:end-1) ...
                             obj.fn(:,1:1:end-shift_x+1)];
-                    else
+                    elseif shift_x > 0
                         fn_shifted = [obj.fn(:,shift_x:end-1) ...
                             obj.fn(:,1:shift_x)];
                     end
@@ -80,7 +80,7 @@ classdef ScalarField < handle
                         shift_y = -shift_y;
                         fn_shifted = [fn_shifted(end-shift_y+1:end-1,:); ...
                             fn_shifted(1:end-shift_y+1,:)];
-                    else
+                    elseif shift_y > 0
                         fn_shifted = [fn_shifted(shift_y:end-1,:); ...
                             fn_shifted(1:shift_y,:)];
                     end
