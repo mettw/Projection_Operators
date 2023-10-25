@@ -122,6 +122,10 @@ classdef Field < handle
             out = sqrt(obj.Ex.*conj(obj.Ex)+obj.Ey.*conj(obj.Ey)+obj.Ez.*conj(obj.Ez));
         end
 
+        function out = phase(obj)
+            out = angle(real(obj.Ex)+1i*real(obj.Ey));
+        end
+
         % This function is used to determine if a vector field has a particular
         % symmetry.
         %
@@ -280,6 +284,44 @@ classdef Field < handle
             xlim([obj.x(1,1) obj.x(1,end)])
             ylim([obj.y(end,1) obj.y(1,1)])
             axis equal
+        end
+
+        function plot_phase(obj, varargin)
+
+            if nargin == 2
+                step_size = varargin{1};
+            elseif nargin > 2
+                step_size = varargin{1};
+                quiver_varargin = varargin(2:end);
+            else
+                step_size = 1;
+                quiver_varargin = {'k'};
+            end
+
+            [Fx,Fy] = gradient(obj.phase);
+            z = sqrt(Fx.^2+Fy.^2);
+
+            figure;
+            surf(obj.x,obj.y,z, z, ...
+                'EdgeColor','none')
+            hold on;
+            set(gca, 'FontSize', 20)
+            view([0 90])
+            xlabel('x', 'FontSize', 24)
+            ylabel('y', 'FontSize', 24)
+            set(gca, 'XTick', [obj.x(1,1) 0 obj.x(1,end)])
+            set(gca, 'YTick', [obj.y(end,1) 0 obj.y(1,1)])
+            set(gca, 'LineWidth', 2)
+            grid off
+            box on
+            xlim([obj.x(1,1) obj.x(1,end)])
+            ylim([obj.y(end,1) obj.y(1,1)])
+
+            %quiver3(obj.x(1:step_size:end),obj.y(1:step_size:end),...
+            %    zeros(size(obj.y(1:step_size:end))),real(obj.Ex(1:step_size:end)),...
+            %    real(obj.Ey(1:step_size:end)),real(obj.Ez(1:step_size:end)), quiver_varargin{:})
+            pbaspect([1 1 1])
+            view([0 90])
         end
 
         % Apply a projector to the field and return the resultant field as
