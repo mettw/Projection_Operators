@@ -172,6 +172,43 @@ classdef Field < handle
                 +double(obj.Ez(:))'*double(obj.Ez(:)));
         end
 
+        function plot_axis(obj, ax, varargin)
+
+            if nargin == 2
+                step_size = varargin{1};
+            elseif nargin > 2
+                step_size = varargin{1};
+                quiver_varargin = varargin(2:end);
+            else
+                step_size = 1;
+                quiver_varargin = {'k'};
+            end
+
+            surf(ax, obj.x*1e9,obj.y*1e9,zeros(size(obj.x))+min(real(obj.Ez),[],'all'), obj.norm, ...
+                'EdgeColor','none')
+            hold(ax, 'on');
+            set(ax, 'FontSize', 14)
+            xlabel(ax, 'x (nm)', 'FontSize', 18)
+            ylabel(ax, 'y (nm)', 'FontSize', 18)
+            set(ax, 'XTick', fix([obj.x(1,1) 0 obj.x(1,end)]*1e9))
+            set(ax, 'YTick', fix([obj.y(end,1) 0 obj.y(1,1)]*1e9))
+            set(ax, 'LineWidth', 2)
+            grid(ax, 'off');
+            box(ax, 'on');
+            xlim(ax, [obj.x(1,1) obj.x(1,end)]*1e9)
+            ylim(ax, [obj.y(end,1) obj.y(1,1)]*1e9)
+            title(ax, '');
+
+            quiver3(ax, obj.x(1:step_size:end)*1e9,obj.y(1:step_size:end)*1e9,...
+                zeros(size(obj.y(1:step_size:end))),real(obj.Ex(1:step_size:end)),...
+                real(obj.Ey(1:step_size:end)),real(obj.Ez(1:step_size:end)), quiver_varargin{:})
+            pbaspect(ax, [1 1 1])
+            view(ax, [0 90])
+
+            cb = colorbar(ax);
+            ylabel(cb, '|E| (V/m)', 'FontSize', 14);
+
+        end
 
         function plot(obj, varargin)
 
