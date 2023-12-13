@@ -206,7 +206,7 @@ classdef Projector < dynamicprops & matlab.mixin.CustomDisplay
                 hObj.F_len = length(hObj.F);
             elseif isfloat(Hilbert_space) & (lower(point_group) == "c6v" ...
                     || lower(point_group) == "c6" || lower(point_group) == "c3v" ...
-                    || lower(point_group) == "c3") %#ok<AND2>
+                    || lower(point_group) == "c3") 
                  % a hex array of values
                 hObj.F = Hilbert_space;
                 hObj.F_len = length(hObj.F);
@@ -478,6 +478,12 @@ classdef Projector < dynamicprops & matlab.mixin.CustomDisplay
                     if normalise
                         create_canonical_basis;
                     end
+                    % I got the orientaion of the matrices wrong - which
+                    % doesn't matter for a real projector, since they are
+                    % symmetric.  But the Hermitian projectors of C4 E11 
+                    % and E22 are oriented incorrectly, so I need to
+                    % transpose the projector here.
+                    hObj.(hObj.projs(irrep_num)) = hObj.(hObj.projs(irrep_num)).';
                 else
                     % allocate memory for all not already calculated
                     for p = hObj.projs(1:end-1)
@@ -493,6 +499,12 @@ classdef Projector < dynamicprops & matlab.mixin.CustomDisplay
                             if normalise
                                 create_canonical_basis;
                             end
+                            % I got the orientaion of the matrices wrong - which
+                            % doesn't matter for a real projector, since they are
+                            % symmetric.  But the Hermitian projectors of C4 E11 
+                            % and E22 are oriented incorrectly, so I need to
+                            % transpose the projector here.
+                            hObj.(hObj.projs(irrep_num)) = hObj.(hObj.projs(irrep_num)).';
                         end
                     end
                     % Now add U
@@ -501,7 +513,6 @@ classdef Projector < dynamicprops & matlab.mixin.CustomDisplay
                         create_canonical_basis;
                     end
                 end
-
 
             end
 
