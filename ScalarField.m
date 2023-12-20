@@ -130,9 +130,16 @@ classdef ScalarField < handle
         end
 
         function plot(obj)
+            obj.plot_fn(real(obj.fn));
+            if ~isreal(obj.fn)
+                obj.plot_fn(imag(obj.fn));
+            end
+        end
+
+        function plot_fn(obj, real_fn)
             figure;
-            %surf(obj.x,obj.y,zeros(size(obj.x)), obj.fn, 'EdgeColor','none')
-            surf(obj.x,obj.y,obj.fn, obj.fn, 'EdgeColor','none')
+            %surf(obj.x,obj.y,zeros(size(obj.x)), real_fn, 'EdgeColor','none')
+            surf(obj.x,obj.y,real_fn, real_fn, 'EdgeColor','none')
             hold on;
             view([0 90])
             xlabel('$x_1$', 'FontSize', 18, 'Interpreter', 'latex')
