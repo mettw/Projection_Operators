@@ -444,6 +444,10 @@ classdef Field < handle
                             obj.Ey(:,1:shift_x)];
                         Ez_shifted = [obj.Ez(:,shift_x:end-1) ...
                             obj.Ez(:,1:shift_x)];
+                    else
+                        Ex_shifted = obj.Ex;
+                        Ey_shifted = obj.Ey;
+                        Ez_shifted = obj.Ez;
                     end
                     if shift_y < 0
                         shift_y = -shift_y;
