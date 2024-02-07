@@ -75,6 +75,8 @@ classdef ScalarField < handle
                     elseif shift_x > 0
                         fn_shifted = [obj.fn(:,shift_x:end-1) ...
                             obj.fn(:,1:shift_x)];
+                    else
+                        fn_shifted = obj.fn;
                     end
                     if shift_y < 0
                         shift_y = -shift_y;
