@@ -24,16 +24,16 @@ classdef Projector < dynamicprops & matlab.mixin.CustomDisplay
     %
     % Alternatively you can name a standard basis such as
     %
-    % > P=Projector("F1", "C4v")
+    % > P=Projector("G1", "C4v")
     %
-    % or a set of standard bases (Note the use of square brackets in this
-    % case)
+    % (where "G1" refers to the \Gamma^{(1)} points) or a set of standard 
+    % bases (Note the use of square brackets in this case)
     %
-    % > P=Projector(["F0" "F1" "F2"], "C4v")
+    % > P=Projector(["G0" "G1" "G2"], "C4v")
     %
     % and for C6v 
     %
-    % > P=Projector("F1_hex", "C6v")
+    % > P=Projector("G1_hex", "C6v")
     %
     % Note that because of the long run time for large bases the
     % constructor does not automatically build any of the projectors,
@@ -153,46 +153,46 @@ classdef Projector < dynamicprops & matlab.mixin.CustomDisplay
             if isstring(Hilbert_space)
                 for F_i=Hilbert_space
                     switch lower(F_i)
-                        case "f0"
+                        case "g0"
                             hObj.F = [hObj.F; {[0; 0]}];
-                        case "f1"
+                        case "g1"
                             hObj.F = [hObj.F; {[1; 0]; [0; 1]; [-1; 0]; [0; -1]}];
-                        case "f2"
+                        case "g2"
                             hObj.F = [hObj.F; {[1; 1]; [-1; 1]; [-1; -1]; [1; -1]}];
-                        case "f3"
+                        case "g3"
                             hObj.F = [hObj.F; {[2; 0]; [0; 2]; [-2; 0]; [0; -2]}];
-                        case "f4"
+                        case "g4"
                             hObj.F = [hObj.F; {[2; 1]; [1; 2]; [-1; 2]; [-2; 1]; ...
                                 [-2; -1]; [-1; -2]; [1; -2]; [2; -1]}];
-                        case "f5"
+                        case "g5"
                             hObj.F = [hObj.F; {[2; 2]; [-2; 2]; [-2; -2]; [2; -2]}];
-                        case "f6"
+                        case "g6"
                             hObj.F = [hObj.F; {[3; 0]; [0; 3]; [-3; 0]; [0; -3]}];
-                        case "f7"
+                        case "g7"
                             hObj.F = [hObj.F; {[3; 1]; [1; 3]; [-1; 3]; [-3; 1]; ...
                                 [-3; -1]; [-1; -3]; [1; -3]; [3; -1]}];
-                        case "f8"
+                        case "g8"
                             hObj.F = [hObj.F; {[3; 2]; [2; 3]; [-2; 3]; [-3; 2]; ...
                                 [-3; -2]; [-2; -3]; [2; -3]; [3; -2]}];
-                        case "f9"
+                        case "g9"
                             hObj.F = [hObj.F; {[3; 3]; [-3; 3]; [-3; -3]; [3; -3]}];
-                        case "f0_hex"
+                        case "g0_hex"
                             hObj.b_vecs = [1/2 1; sqrt(3)/2 0];
                             hObj.F = [hObj.F; {[0; 0]}];
-                        case "f1_hex"
+                        case "g1_hex"
                             hObj.b_vecs = [1/2 1; sqrt(3)/2 0];
                             hObj.F = [hObj.F; {[1;0]; [0; 1]; [-1; 1]; [-1; 0]; [0; -1]; [1; -1]}];
                                 %{[1; 0]; [1/2; sqrt(3)/2]; [-1/2; sqrt(3)/2]; ...
                                 %[-1; 0]; [-1/2; -sqrt(3)/2]; [1/2; -sqrt(3)/2]}];
-                        case "f1p_hex"
+                        case "g1p_hex"
                             hObj.b_vecs = [sqrt(3)/2 sqrt(3)/2; 1/2 -1/2]*sqrt(3)/2;
                             hObj.F = [hObj.F; {[1;0]; [0; 1]; [-1; 1]; [-1; 0]; [0; -1]; [1; -1]}];
-                        case "f2_hex"
+                        case "g2_hex"
                             hObj.b_vecs = [1/2 1; sqrt(3)/2 0];
                             hObj.F = [hObj.F; {[1; 1]; [1; 2]; [-2; 1]; [-1; -1]; [1; -2]; [2; -1]}];
                                 %{[3/2; sqrt(3)/2]; [0; sqrt(3)]; [-3/2; sqrt(3)/2]; ...
                                 %[-3/2; -sqrt(3)/2]; [0; -sqrt(3)]; [3/2; -sqrt(3)/2]}];
-                        case "f1_tri"
+                        case "g1_tri"
                             %hObj.b_vecs = [0 3/4;sqrt(3)/2 -sqrt(3)/4];
                             hObj.b_vecs = [-1/2 1;sqrt(3)/2 0];
                             hObj.F = [hObj.F; {[1;0]; [0; 1]; [-1; -1]}];
