@@ -116,43 +116,43 @@ classdef Harmonic
             if isstring(Hilbert_space)
                 for F_i=Hilbert_space
                     switch lower(F_i)
-                        case "f0"
+                        case "g0"
                             hObj.F = [hObj.F; {[0; 0]}];
-                        case "f1"
+                        case "g1"
                             hObj.F = [hObj.F; {[1; 0]; [0; 1]; [-1; 0]; [0; -1]}];
-                        case "f2"
+                        case "g2"
                             hObj.F = [hObj.F; {[1; 1]; [-1; 1]; [-1; -1]; [1; -1]}];
-                        case "f3"
+                        case "g3"
                             hObj.F = [hObj.F; {[2; 0]; [0; 2]; [-2; 0]; [0; -2]}];
-                        case "f4"
+                        case "g4"
                             hObj.F = [hObj.F; {[2; 1]; [1; 2]; [-1; 2]; [-2; 1]; ...
                                 [-2; -1]; [-1; -2]; [1; -2]; [2; -1]}];
-                        case "f5"
+                        case "g5"
                             hObj.F = [hObj.F; {[2; 2]; [-2; 2]; [-2; -2]; [2; -2]}];
-                        case "f6"
+                        case "g6"
                             hObj.F = [hObj.F; {[3; 0]; [0; 3]; [-3; 0]; [0; -3]}];
-                        case "f7"
+                        case "g7"
                             hObj.F = [hObj.F; {[3; 1]; [1; 3]; [-1; 3]; [-3; 1]; ...
                                 [-3; -1]; [-1; -3]; [1; -3]; [3; -1]}];
-                        case "f8"
+                        case "g8"
                             hObj.F = [hObj.F; {[3; 2]; [2; 3]; [-2; 3]; [-3; 2]; ...
                                 [-3; -2]; [-2; -3]; [2; -3]; [3; -2]}];
-                        case "f9"
+                        case "g9"
                             hObj.F = [hObj.F; {[3; 3]; [-3; 3]; [-3; -3]; [3; -3]}];
-                        case "f0_hex"
+                        case "g0_hex"
                             hObj.F = [hObj.F; {[0; 0]}];
                             hObj.is_hexagonal = true;
-                        case "f1_hex"
+                        case "g1_hex"
                             hObj.F = [hObj.F; {[1/2; sqrt(3)/2]; [1; 0]; [1/2; -sqrt(3)/2]; ...
                                 [-1/2; -sqrt(3)/2]; [-1; 0]; [-1/2; sqrt(3)/2]}];
                             %hObj.F = [hObj.F; {[1; 0]; [1/2; sqrt(3)/2]; [-1/2; sqrt(3)/2]; ...
                             %    [-1; 0]; [-1/2; -sqrt(3)/2]; [1/2; -sqrt(3)/2]}];
                             hObj.is_hexagonal = true;
-                        case "f2_hex"
+                        case "g2_hex"
                             hObj.F = [hObj.F; {[3/2; sqrt(3)/2]; [0; sqrt(3)]; [-3/2; sqrt(3)/2]; ...
                                 [-3/2; -sqrt(3)/2]; [0; -sqrt(3)]; [3/2; -sqrt(3)/2]}];
                             hObj.is_hexagonal = true;
-                        case "f1_tri"
+                        case "g1_tri"
                             %hObj.F = [hObj.F; {[0; sqrt(3)/2]; [3/4; -sqrt(3)/4]; [-3/4; -sqrt(3)/4]}];
                             %hObj.F = [hObj.F; {[0; 1]; [sqrt(3)/2; -1/2]; [-sqrt(3)/2; -1/2]}];
                             hObj.F = [hObj.F; {[-1/2; sqrt(3)/2]; [1; 0]; [-1/2; -sqrt(3)/2]}];
@@ -288,6 +288,8 @@ classdef Harmonic
         % a FFT of these is harder.  I am therefore no longer using this
         % method.
         function I = get_phi(hObj)
+            I = sum(hObj.K,3);
+            %{
             A = zeros(hObj.num_points);
             H = hObj.basis*hObj.coeffs;
             center = (hObj.num_points-1)/2+1;
@@ -298,6 +300,7 @@ classdef Harmonic
             I=ifft2(ifftshift(-A*hObj.num_points^2));
             % The results if off center by 1 pixel.
             I = I(2:end,2:end);
+            %}
         end
 
         % plot the scalar planar harmonic
