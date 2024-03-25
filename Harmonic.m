@@ -8,7 +8,7 @@ classdef Harmonic
     %
     % Create a Projector object for convenience
     %
-    % > P_C4v=Projector("F1", "C4v")
+    % > P_C4v=Projector("G1", "C4v")
     %
     % Create the harmonic using the projector to give us the basis for the
     % E irreducible representation of C4v.  The first parameter is the 
@@ -19,7 +19,7 @@ classdef Harmonic
     % the mode within the 2D eigenspace of the E irreducible 
     % representation.
     %
-    % > hm=Harmonic("F1", P_C4v.basis("E"), [cosd(135), sind(135)]*exp(1i))
+    % > hm=Harmonic("G1", P_C4v.basis("E"), [cosd(135), sind(135)]*exp(1i))
     %
     % Plot the harmonic with
     %
