@@ -549,7 +549,7 @@ classdef Projector < dynamicprops & matlab.mixin.CustomDisplay
                         case {"c4v", "c4v_d"}
                             hObj.U = [hObj.A1_basis hObj.A2_basis ...
                                 hObj.B1_basis hObj.B2_basis ...
-                                hObj.E_basis];
+                                hObj.E_11_basis hObj.E_22_basis];
                         case "c6v"
                             % apply gram-schmidt process to make orthogonal
                             [hObj.E1_11_basis,~] = gsog(hObj.E1_11_basis);
