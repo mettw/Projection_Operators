@@ -399,6 +399,18 @@ classdef Harmonic
                 vK = cat(3, vK, sum(hObj.harm(i,:))*exp(1i*(b(1)+k(1))*vX+1i*(b(2)+k(2))*vY));
             end
         end
+
+        function hObj = resetup(hObj, K)
+            hObj.K = K;
+            hObj.K20 = K(1:5:end-1,1:5:end-1);
+
+            hObj.vec_x = sum(hObj.K.*hObj.derivy,3);
+            hObj.vec_y = -sum(hObj.K.*hObj.derivx,3);
+            hObj.vec_x20 = sum(hObj.K20.*hObj.derivy,3);
+            hObj.vec_y20 = -sum(hObj.K20.*hObj.derivx,3);
+            hObj.vec_z = zeros(size(hObj.vec_x));
+            hObj.vec_z20 = zeros(size(hObj.vec_x20));
+        end
     end
 end
 
