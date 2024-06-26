@@ -159,6 +159,10 @@ classdef Harmonic
                             %hObj.F = [hObj.F; {[-1/2; sqrt(3)/2]; [1/2; sqrt(3)/2]; [1;0]; [1/2; -sqrt(3)/2]; ...
                             %    [-1/2; -sqrt(3)/2]; [-1; 0]}];
                             hObj.is_hexagonal = true;
+                        case "gx"
+                            hObj.F = [hObj.F; {[1; 0]; [-1; 0]}];
+                        case "gy"
+                            hObj.F = [hObj.F; {[0; 1]; [0; -1]}];
                         otherwise
                             error("Unknown Hibert space name");
                     end

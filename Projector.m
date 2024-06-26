@@ -197,6 +197,10 @@ classdef Projector < dynamicprops & matlab.mixin.CustomDisplay
                             hObj.b_vecs = [-1/2 1;sqrt(3)/2 0];
                             hObj.F = [hObj.F; {[1;0]; [0; 1]; [-1; -1]}];
                             %hObj.F = [hObj.F; {[1;0]; [1; 1]; [0; 1]; [-1; 0]; [-1; -1]; [0; -1]}];
+                        case "gx"
+                            hObj.F = [hObj.F; {[1; 0]; [-1; 0]}];
+                        case "gy"
+                            hObj.F = [hObj.F; {[0; 1]; [0; -1]}];
                         otherwise
                             error("Unknown Hibert space name");
                     end
