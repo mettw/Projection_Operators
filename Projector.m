@@ -727,8 +727,17 @@ classdef Projector < dynamicprops & matlab.mixin.CustomDisplay
                 end
 
                 if rnk~= 0
+                    if irr_rep =="E_12" || irr_rep == "E_21"
+                        hObj.(vec_str) = hObj.(vec_str).'./norm(hObj.(vec_str).');
+                    else
+                        hObj.(vec_str) = orth(hObj.(irr_rep));
+                    end
+                end
+                %{
+                if rnk~= 0
                     hObj.(vec_str) = hObj.(vec_str).'./norm(hObj.(vec_str).');
                 end
+                %}
             end
         end
 
