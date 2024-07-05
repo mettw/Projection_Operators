@@ -335,6 +335,60 @@ classdef Harmonic
             end
         end
 
+        % plot the scalar planar harmonic with complex plot as well
+        function I = plot_phi_complpex(hObj)
+
+            figure;
+            I = sum(hObj.K,3);%get_phi;
+            imagesc([hObj.X(1) hObj.X(end)],[hObj.Y(1) hObj.Y(end)],real(I))
+            axis tight;
+            pbaspect([1 1 1])
+            view([0 90])
+            box on
+            set(gca, 'FontSize', 16);
+            xlabel('x/a', 'FontSize',18)
+            ylabel('y/a', 'FontSize',18)
+            set(gca, 'XTick', [-hObj.b_len(1)/2 0 hObj.b_len(1)/2])
+            set(gca, 'XTickLabel', {'-a','0','a'})
+            set(gca, 'YTick', [-hObj.b_len(2)/2 0 hObj.b_len(2)/2])
+            set(gca, 'YTickLabel', {'-a','0','a'})
+            if hObj.is_hexagonal == true
+                xlim([-hObj.b_len(1) hObj.b_len(1)])
+                ylim([-hObj.b_len(2) hObj.b_len(2)])
+                plot([hObj.F(:,1); hObj.F(1,1)]*hObj.b_len(1)*2/3, ...
+                    [hObj.F(:,2); hObj.F(1,2)]*hObj.b_len(2)*2/3, 'k', 'LineWidth', 2)
+            else
+                xlim([-hObj.b_len(1)/2 hObj.b_len(1)/2])
+                ylim([-hObj.b_len(2)/2 hObj.b_len(2)/2])
+            end
+            title('Real');
+
+
+            figure;
+            imagesc([hObj.X(1) hObj.X(end)],[hObj.Y(1) hObj.Y(end)],imag(I))
+            axis tight;
+            pbaspect([1 1 1])
+            view([0 90])
+            box on
+            set(gca, 'FontSize', 16);
+            xlabel('x/a', 'FontSize',18)
+            ylabel('y/a', 'FontSize',18)
+            set(gca, 'XTick', [-hObj.b_len(1)/2 0 hObj.b_len(1)/2])
+            set(gca, 'XTickLabel', {'-a','0','a'})
+            set(gca, 'YTick', [-hObj.b_len(2)/2 0 hObj.b_len(2)/2])
+            set(gca, 'YTickLabel', {'-a','0','a'})
+            if hObj.is_hexagonal == true
+                xlim([-hObj.b_len(1) hObj.b_len(1)])
+                ylim([-hObj.b_len(2) hObj.b_len(2)])
+                plot([hObj.F(:,1); hObj.F(1,1)]*hObj.b_len(1)*2/3, ...
+                    [hObj.F(:,2); hObj.F(1,2)]*hObj.b_len(2)*2/3, 'k', 'LineWidth', 2)
+            else
+                xlim([-hObj.b_len(1)/2 hObj.b_len(1)/2])
+                ylim([-hObj.b_len(2)/2 hObj.b_len(2)/2])
+            end
+            title('Imaginary')
+        end
+
         % Plot the vector planar harmonic
         % TODO: set pbaspect() via the lattice vectors
         function plot(hObj)
