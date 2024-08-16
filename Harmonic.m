@@ -1,4 +1,4 @@
-classdef Harmonic
+classdef Harmonic < handle
     %HARMONIC - vector representation of a planar harmonic
     %  
     % This object creates a vector describing the field in a planar
@@ -54,6 +54,8 @@ classdef Harmonic
         harm;
 
         is_hexagonal = false;
+        is_rhombic = false;
+        unit_cell = []; % for plotting the edges 
         X;
         Y;
         K;
@@ -170,6 +172,7 @@ classdef Harmonic
                 hObj.F = single([hObj.F{:}].');
                 hObj.F_len = length(hObj.F);
             elseif isnumeric(Hilbert_space) % array of values
+                hObj.is_rhombic = true; % just in case it is
                 sz = size(Hilbert_space);
                 if sz(2) == 2
                     hObj.F_len = sz(1);
@@ -179,10 +182,13 @@ classdef Harmonic
                     hObj.F = reshape((Hilbert_space),[hObj.F_len 2]);
                 end
             else % Hilbert_space is a cell array of [m,n]
+                hObj.is_rhombic = true; % just in case it is
                 if isrow(Hilbert_space)
-                    hObj.F = ([Hilbert_space{:}].');
+                    B = cellfun(@(x)([0 -1; 1 0]*x), Hilbert_space, 'UniformOutput', false);
+                    hObj.F = ([B{:}].');
                 else
-                    hObj.F = ([Hilbert_space{:}]);
+                    B = cellfun(@(x)([0 -1; 1 0]*x), Hilbert_space, 'UniformOutput', false);
+                    hObj.F = ([B{:}]);
                 end
                 hObj.F_len = length(hObj.F);
             end
@@ -307,12 +313,17 @@ classdef Harmonic
             %}
         end
 
+        function hObj = set_unit_cell(hObj, unit_cell_in)
+            hObj.unit_cell = unit_cell_in;
+        end
+
         % plot the scalar planar harmonic
         function I = plot_phi(hObj)
 
             figure;
             I = sum(hObj.K,3);%get_phi;
-            imagesc([hObj.X(1) hObj.X(end)],[hObj.Y(1) hObj.Y(end)],real(I))
+            imagesc([hObj.X(1) hObj.X(end)],[hObj.Y(1) hObj.Y(end)],real(I));
+            hold on;
             axis tight;
             pbaspect([1 1 1])
             view([0 90])
@@ -329,6 +340,10 @@ classdef Harmonic
                 ylim([-hObj.b_len(2) hObj.b_len(2)])
                 plot([hObj.F(:,1); hObj.F(1,1)]*hObj.b_len(1)*2/3, ...
                     [hObj.F(:,2); hObj.F(1,2)]*hObj.b_len(2)*2/3, 'k', 'LineWidth', 2)
+            elseif hObj.is_rhombic == true
+                xlim([-hObj.b_len(1) hObj.b_len(1)]);
+                ylim([-hObj.b_len(2) hObj.b_len(2)]);
+                plot(hObj.unit_cell(1,:), hObj.unit_cell(2,:), 'k', 'LineWidth', 2);
             else
                 xlim([-hObj.b_len(1)/2 hObj.b_len(1)/2])
                 ylim([-hObj.b_len(2)/2 hObj.b_len(2)/2])
@@ -407,12 +422,16 @@ classdef Harmonic
             grid off
             box on
             if hObj.is_hexagonal == true
-                xlim([-hObj.b_len(1) hObj.b_len(1)])
-                ylim([-hObj.b_len(2) hObj.b_len(2)])
+                xlim([-hObj.b_len(1) hObj.b_len(1)]);
+                ylim([-hObj.b_len(2) hObj.b_len(2)]);
                 plot([1 1/2 -1/2 -1 -1/2 1/2 1]*hObj.b_len(1)*2/3, ...
-                    [0 sqrt(3)/2 sqrt(3)/2 0 -sqrt(3)/2 -sqrt(3)/2 0]*hObj.b_len(2)*2/3, 'k', 'LineWidth', 2)
+                    [0 sqrt(3)/2 sqrt(3)/2 0 -sqrt(3)/2 -sqrt(3)/2 0]*hObj.b_len(2)*2/3, 'k', 'LineWidth', 2);
                 %plot([hObj.F(:,1); hObj.F(1,1)]*hObj.b_len(1)*2/3, ...
                 %    [hObj.F(:,2); hObj.F(1,2)]*hObj.b_len(2)*2/3, 'k', 'LineWidth', 2)
+            elseif hObj.is_rhombic == true
+                xlim([-hObj.b_len(1) hObj.b_len(1)]);
+                ylim([-hObj.b_len(2) hObj.b_len(2)]);
+                plot(hObj.unit_cell(1,:), hObj.unit_cell(2,:), 'k', 'LineWidth', 2);
             else
                 xlim([-hObj.b_len(1)/2 hObj.b_len(1)/2])
                 ylim([-hObj.b_len(2)/2 hObj.b_len(2)/2])
@@ -428,13 +447,46 @@ classdef Harmonic
             end
         end
 
+        function plot_norm(hObj)
+            figure;
+            surf(hObj.X,hObj.Y,zeros(size(hObj.X)),hObj.vec_norm-max(hObj.vec_norm,[],'all'), 'EdgeColor','none')
+            hold on;
+            view([0 90])
+            xlabel('$x_1$', 'FontSize', 18, 'Interpreter', 'latex')
+            ylabel('$x_2$', 'FontSize', 18, 'Interpreter', 'latex')
+            set(gca, 'XTick', [-hObj.b_len(1)/2 0 hObj.b_len(1)/2])
+            set(gca, 'XTickLabel', {'-a','0','a'})
+            set(gca, 'YTick', [-hObj.b_len(2)/2 0 hObj.b_len(2)/2])
+            set(gca, 'YTickLabel', {'-a','0','a'})
+            set(gca, 'LineWidth', 2)
+            set(gca, 'FontSize', 16)
+            grid off
+            box on
+            if hObj.is_hexagonal == true
+                xlim([-hObj.b_len(1) hObj.b_len(1)]);
+                ylim([-hObj.b_len(2) hObj.b_len(2)]);
+                plot([1 1/2 -1/2 -1 -1/2 1/2 1]*hObj.b_len(1)*2/3, ...
+                    [0 sqrt(3)/2 sqrt(3)/2 0 -sqrt(3)/2 -sqrt(3)/2 0]*hObj.b_len(2)*2/3, 'k', 'LineWidth', 2);
+                %plot([hObj.F(:,1); hObj.F(1,1)]*hObj.b_len(1)*2/3, ...
+                %    [hObj.F(:,2); hObj.F(1,2)]*hObj.b_len(2)*2/3, 'k', 'LineWidth', 2)
+            elseif hObj.is_rhombic == true
+                xlim([-hObj.b_len(1) hObj.b_len(1)]);
+                ylim([-hObj.b_len(2) hObj.b_len(2)]);
+                plot(hObj.unit_cell(1,:), hObj.unit_cell(2,:), 'k', 'LineWidth', 2);
+            else
+                xlim([-hObj.b_len(1)/2 hObj.b_len(1)/2])
+                ylim([-hObj.b_len(2)/2 hObj.b_len(2)/2])
+            end
+            pbaspect([1 1 1]);
+        end
+
         % create the mesh grid and K vector
         function [X,Y,K,vX,vY,vK] = plot_setup(hObj)
             [X,Y,K,vX,vY,vK] = hObj.plot_setup_k([0 0]);
         end
 
         function [X,Y,K,vX,vY,vK] = plot_setup_k(hObj, k)
-            if hObj.is_hexagonal == true
+            if hObj.is_hexagonal == true || hObj.is_rhombic == true
                 [X,Y] =   meshgrid((-hObj.b_len(1):2*hObj.b_len(1)/(hObj.num_points-1):hObj.b_len(1)),...
                     (-hObj.b_len(2):2*hObj.b_len(2)/(hObj.num_points-1):hObj.b_len(2)));
                 % lower resolution mesh for the vector plots

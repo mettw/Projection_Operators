@@ -108,7 +108,7 @@ classdef Field < handle
                 x_vals = -obj.size_x+1:2:obj.size_x-1;
             end
             if isodd(obj.size_y)
-                y_vals = (obj.size_y-1)/2:-1:-(obj.size_y-1)/2);
+                y_vals = (obj.size_y-1)/2:-1:-(obj.size_y-1)/2;
             else
                 y_vals = obj.size_y-1:-2:-obj.size_y+1;
             end
