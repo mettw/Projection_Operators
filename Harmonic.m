@@ -31,7 +31,7 @@ classdef Harmonic < handle
     % The properties and methods are all public so that you can easily 
     % create subclasses of this class.
     properties
-        % Hilbert space
+        % Fourier space
         F;
         F_len;
         % lengths of the lattice vectors
@@ -79,10 +79,10 @@ classdef Harmonic < handle
     end
     
     methods
-        function hObj = Harmonic(Hilbert_space, mode_basis, mode_coeffs, varargin)
+        function hObj = Harmonic(Fourier_space, mode_basis, mode_coeffs, varargin)
             %HARMONIC Construct an instance of this class
             %   
-            % Hilbert_space   Basis to use
+            % Fourier_space   Basis to use
             % mode_basis      Basis vectors of the mode.  Use the Projector
             %                 object for this.  Can be two dimentional.
             % mode_coeffs     Scaling factors for the mode
@@ -114,9 +114,9 @@ classdef Harmonic < handle
                 hObj.num_points = hObj.num_points + 1;
             end
 
-            % if Hilbert_space is a name of a standard F_i space
-            if isstring(Hilbert_space)
-                for F_i=Hilbert_space
+            % if Fourier_space is a name of a standard F_i space
+            if isstring(Fourier_space)
+                for F_i=Fourier_space
                     switch lower(F_i)
                         case "g0"
                             hObj.F = [hObj.F; {[0; 0]}];
@@ -171,23 +171,23 @@ classdef Harmonic < handle
                 end
                 hObj.F = single([hObj.F{:}].');
                 hObj.F_len = length(hObj.F);
-            elseif isnumeric(Hilbert_space) % array of values
+            elseif isnumeric(Fourier_space) % array of values
                 hObj.is_rhombic = true; % just in case it is
-                sz = size(Hilbert_space);
+                sz = size(Fourier_space);
                 if sz(2) == 2
                     hObj.F_len = sz(1);
-                    hObj.F = Hilbert_space;
+                    hObj.F = Fourier_space;
                 else
                     hObj.F_len = sz(1)*sz(2);
-                    hObj.F = reshape((Hilbert_space),[hObj.F_len 2]);
+                    hObj.F = reshape((Fourier_space),[hObj.F_len 2]);
                 end
-            else % Hilbert_space is a cell array of [m,n]
+            else % Fourier_space is a cell array of [m,n]
                 hObj.is_rhombic = true; % just in case it is
-                if isrow(Hilbert_space)
-                    B = cellfun(@(x)([0 -1; 1 0]*x), Hilbert_space, 'UniformOutput', false);
+                if isrow(Fourier_space)
+                    B = cellfun(@(x)([0 -1; 1 0]*x), Fourier_space, 'UniformOutput', false);
                     hObj.F = ([B{:}].');
                 else
-                    B = cellfun(@(x)([0 -1; 1 0]*x), Hilbert_space, 'UniformOutput', false);
+                    B = cellfun(@(x)([0 -1; 1 0]*x), Fourier_space, 'UniformOutput', false);
                     hObj.F = ([B{:}]);
                 end
                 hObj.F_len = length(hObj.F);

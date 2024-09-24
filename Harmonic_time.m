@@ -34,9 +34,9 @@ classdef Harmonic_time < Harmonic
     % different mode coefficients.
 
     methods
-        function hObj = Harmonic_time(Hilbert_space, mode_basis, mode_coeffs, varargin)
+        function hObj = Harmonic_time(Fourier_space, mode_basis, mode_coeffs, varargin)
 
-            hObj = hObj@Harmonic(Hilbert_space, mode_basis, mode_coeffs, varargin{:});
+            hObj = hObj@Harmonic(Fourier_space, mode_basis, mode_coeffs, varargin{:});
 
         end
 

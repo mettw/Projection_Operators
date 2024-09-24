@@ -9,7 +9,7 @@ classdef ScalarField < handle
         fn; % scalar function
         size_x;
         size_y;
-        % The Hilbert space used to symmetrise a field
+        % The Fourier space used to symmetrise a field
         F_x = [];
         F_y = [];
     end

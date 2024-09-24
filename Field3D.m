@@ -13,7 +13,7 @@ classdef Field3D < handle
         size_x;
         size_y;
         size_z;
-        % The Hilbert space used to symmetrise a field
+        % The Fourier space used to symmetrise a field
         F_x = [];
         F_y = [];
         F_z = [];

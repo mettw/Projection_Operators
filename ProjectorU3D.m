@@ -87,7 +87,7 @@ classdef ProjectorU3D < dynamicprops & matlab.mixin.CustomDisplay
     % The properties and methods are all public so that you can easily 
     % create subclasses of this class.
     properties
-        % Hilbert space
+        % Fourier space
         % These are the (p,q) values for the vectors
         % va{k} = p\va{b}_1+q\va{b}_2
         F;
@@ -127,16 +127,16 @@ classdef ProjectorU3D < dynamicprops & matlab.mixin.CustomDisplay
         % SETUP functions
         %
         
-        function hObj = ProjectorU3D(Hilbert_space, point_group, vararg)
+        function hObj = ProjectorU3D(Fourier_space, point_group, vararg)
             
             hObj.create_operator_matrices;
             
             if nargin == 3
                 hObj.include_y_projs = vararg{1};
             end
-            % if Hilbert_space is a name of a standard F_i space
-            if isstring(Hilbert_space)
-                for F_i=Hilbert_space
+            % if Fourier_space is a name of a standard F_i space
+            if isstring(Fourier_space)
+                for F_i=Fourier_space
                     switch lower(F_i)
                         case "g0"
                             hObj.F = [hObj.F; {[0; 0; 0]}];
@@ -193,26 +193,26 @@ classdef ProjectorU3D < dynamicprops & matlab.mixin.CustomDisplay
                 %hObj.F = int16([hObj.F{:}].');
                 hObj.F = ([hObj.F{:}].');
                 hObj.F_len = length(hObj.F);
-            elseif isfloat(Hilbert_space) & (lower(point_group) == "c6v" ...
+            elseif isfloat(Fourier_space) & (lower(point_group) == "c6v" ...
                     || lower(point_group) == "c6" || lower(point_group) == "c3v" ...
                     || lower(point_group) == "c3") 
                  % a hex array of values
-                hObj.F = Hilbert_space;
+                hObj.F = Fourier_space;
                 hObj.F_len = length(hObj.F);
-            elseif isfloat(Hilbert_space) % a square array of values
-                sz = size(Hilbert_space);
+            elseif isfloat(Fourier_space) % a square array of values
+                sz = size(Fourier_space);
                 hObj.F_len = sz(1)*sz(2)*sz(3);
-                %hObj.F = reshape(int16(Hilbert_space),[hObj.F_len 2]);
-                hObj.F = reshape((Hilbert_space),[hObj.F_len 3]);
-                %hObj.F = Hilbert_space;
+                %hObj.F = reshape(int16(Fourier_space),[hObj.F_len 2]);
+                hObj.F = reshape((Fourier_space),[hObj.F_len 3]);
+                %hObj.F = Fourier_space;
                 %hObj.F_len = length(hObj.F);
-            else % Hilbert_space is a cell array of [m,n]
-                if isrow(Hilbert_space)
-                    %hObj.F = int16([Hilbert_space{:}].');
-                    hObj.F = ([Hilbert_space{:}].');
+            else % Fourier_space is a cell array of [m,n]
+                if isrow(Fourier_space)
+                    %hObj.F = int16([Fourier_space{:}].');
+                    hObj.F = ([Fourier_space{:}].');
                 else
-                    %hObj.F = int16([Hilbert_space{:}]);
-                    hObj.F = ([Hilbert_space{:}]);
+                    %hObj.F = int16([Fourier_space{:}]);
+                    hObj.F = ([Fourier_space{:}]);
                 end
                 hObj.F_len = length(hObj.F);
             end
@@ -336,7 +336,7 @@ classdef ProjectorU3D < dynamicprops & matlab.mixin.CustomDisplay
             end
         end
 
-        function space = hilbert_space(hObj)
+        function space = fourier_space(hObj)
             space = hObj.F;
         end
         
@@ -471,7 +471,7 @@ classdef ProjectorU3D < dynamicprops & matlab.mixin.CustomDisplay
                 % symmetry operation.  The corresponding symmetry operation is
                 % then made on each column.
 
-                % we are storing the Hilbert space as the (p,q) values, but
+                % we are storing the Fourier space as the (p,q) values, but
                 % we need to convert this to cartesian coordinates by
                 % multiplying by the basis vectors - ie
                 % p*b_1+q*b_2
