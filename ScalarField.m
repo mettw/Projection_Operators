@@ -54,6 +54,9 @@ classdef ScalarField < handle
             end
         end
 
+        function out = vector(obj)
+            out = obj.fn(:);
+        end
         % Shift the field to the left and down for cases where the highest
         % symmetry point is not at the center.  This assumes a particular
         % case and is not generally usefull.

@@ -462,19 +462,19 @@ classdef Projector < dynamicprops & matlab.mixin.CustomDisplay
             % Only run if it hasn't already been run
             if isempty(hObj.(irrep))
                 %K_rep = ones(hObj.F_len, 2*hObj.F_len, 'int16');
-                K_rep = ones(hObj.F_len, 2*hObj.F_len);
-                F_vec = ones(size(hObj.F));
+                K_rep = sparse(zeros(hObj.F_len, 2*hObj.F_len));
+                F_vec = sparse(zeros(size(hObj.F)));
                 % F_tmp has F as columns repeated as many times as there are
                 % elements of F.
-                F_tmp = (hObj.F.');
+                F_tmp = sparse(hObj.F.');
                 F_tmp = repmat(F_tmp(:).',hObj.F_len,1);
 
                 % Don't allocate any memory for U
                 if irrep ~= "U"
                     irrep_num = find(hObj.projs == irrep);
                     %hObj.(irrep) = zeros(hObj.F_len, hObj.F_len, 'single');
-                    hObj.(irrep) = zeros(hObj.F_len, hObj.F_len);
-                    representation = zeros(hObj.F_len, hObj.F_len, 'logical');
+                    hObj.(irrep) = sparse(zeros(hObj.F_len, hObj.F_len));
+                    representation = sparse(zeros(hObj.F_len, hObj.F_len, 'logical'));
                     for sym_op = 1:length(hObj.ops)
                         get_representation;
                         add_representation(char_table(:,sym_op));
@@ -494,8 +494,8 @@ classdef Projector < dynamicprops & matlab.mixin.CustomDisplay
                         irrep_num = find(hObj.projs == p);
                         if isempty(hObj.(p))
                             %hObj.(p) = zeros(hObj.F_len, hObj.F_len, 'single');
-                            hObj.(p) = zeros(hObj.F_len, hObj.F_len);
-                            representation = zeros(hObj.F_len, hObj.F_len, 'logical');
+                            hObj.(p) = sparse(zeros(hObj.F_len, hObj.F_len));
+                            representation = sparse(zeros(hObj.F_len, hObj.F_len, 'logical'));
                             for sym_op = 1:length(hObj.ops)
                                 get_representation;
                                 add_representation(char_table(:,sym_op));
@@ -617,8 +617,8 @@ classdef Projector < dynamicprops & matlab.mixin.CustomDisplay
                 % what the hObj.b_vecs in the code below does.
                 %F_vec = int16(hObj.b_vecs\(hObj.(hObj.ops(sym_op))*...
                 %    (hObj.b_vecs*single(hObj.F).'))).';
-                F_vec = (hObj.b_vecs\(hObj.(hObj.ops(sym_op))*...
-                    (hObj.b_vecs*(hObj.F).'))).';
+                F_vec = sparse((hObj.b_vecs\(hObj.(hObj.ops(sym_op))*...
+                    (hObj.b_vecs*(hObj.F).'))).');
 
 
                 % Create representations for each of the symmetry operations
@@ -658,7 +658,8 @@ classdef Projector < dynamicprops & matlab.mixin.CustomDisplay
                 % Stop MATLAB from converting K_out into logical values,
                 % which will ruin subsequent calcualtions.
                 %K_rep = ~(F_tmp-K_rep);%<1e-6&(F_tmp-K_rep)>-1e-6);
-                K_rep = (F_tmp-K_rep)<1e-6&(F_tmp-K_rep)>-1e-6;
+                %K_rep = (F_tmp-K_rep)<1e-6&(F_tmp-K_rep)>-1e-6;
+                K_rep = abs(F_tmp-K_rep)<1e-6;
 
                 representation(:,:) = K_rep(:,1:2:end)&K_rep(:,2:2:end);
                 if hObj.save_representations
@@ -695,19 +696,19 @@ classdef Projector < dynamicprops & matlab.mixin.CustomDisplay
                             hObj.(p_y) = hObj.(irr_rep).*hObj.y_vec;
                             if irr_rep == "E_12"
                                     hObj.(p_y) = hObj.(p_y) ...
-                                        /(trace(hObj.E_22)/rank(hObj.E_22));
+                                        /(trace(hObj.E_22)/sprank(hObj.E_22));
                             else
                                     hObj.(p_y) = hObj.(p_y) ...
-                                        /(trace(hObj.E_11)/rank(hObj.E_11));
+                                        /(trace(hObj.E_11)/sprank(hObj.E_11));
                             end
                         end
                         hObj.add_irrep(irr_rep);
                             if irr_rep == "E_12"
                                 hObj.(irr_rep) = hObj.(irr_rep) ...
-                                    /(trace(hObj.E_22)/rank(hObj.E_22));
+                                    /(trace(hObj.E_22)/sprank(hObj.E_22));
                             else
                                 hObj.(irr_rep) = hObj.(irr_rep) ...
-                                    /(trace(hObj.E_11)/rank(hObj.E_11));
+                                    /(trace(hObj.E_11)/sprank(hObj.E_11));
                             end
                     else
                         if hObj.include_y_projs
@@ -715,34 +716,37 @@ classdef Projector < dynamicprops & matlab.mixin.CustomDisplay
                             addprop(hObj, p_y);
                             hObj.(p_y) = hObj.(irr_rep).*hObj.y_vec;
                             hObj.(p_y) = hObj.(p_y) ...
-                                /(trace(hObj.(p_y))/rank(hObj.(p_y)));
+                                /(trace(hObj.(p_y))/sprank(hObj.(p_y)));
                         end
                         hObj.(irr_rep) = hObj.(irr_rep) ...
                             /(trace(hObj.(irr_rep))/rnk);
 
                     end
-                    hObj.(vec_str)=hObj.(vec_str)(1:rnk,:);
+                    hObj.(vec_str)=hObj.(vec_str)(1:rnk,:).';
                 else
                     %hObj.(irr_rep) = [];
                     hObj.(vec_str) = [];
                 end
 
                 if rnk~= 0
+                    %{
                     if irr_rep =="E_12" || irr_rep == "E_21" || ...
                             irr_rep =="E1_12" || irr_rep == "E1_21" || ...
                             irr_rep =="E2_12" || irr_rep == "E2_21"
                         hObj.(vec_str) = hObj.(vec_str).'./norm(hObj.(vec_str).');
                     else
-                        hObj.(vec_str) = orth(hObj.(irr_rep));
+                        %hObj.(vec_str) = orth(hObj.(irr_rep));
+                        %[hObj.(vec_str), ~] = qr(hObj.(irr_rep), 0);
+                        [hObj.(vec_str), ~] = qr(hObj.(vec_str), 0);
                     end
+                    %}
+                    [hObj.(vec_str), ~] = qr(hObj.(vec_str), 0);
                 end
                 %{
                 if rnk~= 0
                     hObj.(vec_str) = hObj.(vec_str).'./norm(hObj.(vec_str).');
                 end
                 %}
-
-                hObj.(vec_str) = sparse(hObj.(vec_str));
             end
         end
 

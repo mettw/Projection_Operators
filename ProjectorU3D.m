@@ -529,7 +529,7 @@ classdef ProjectorU3D < dynamicprops & matlab.mixin.CustomDisplay
 
                 % Reduce to row echelon form to get the matrix A such that
                 % P = A*(A^T*A)^-1*A^T
-                [basis, pivots] = frref(P_tmp);
+                [basis, pivots] = frref(sparse(P_tmp));
                 rnk = length(pivots);
 
                 if rnk~= 0

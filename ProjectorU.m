@@ -455,18 +455,18 @@ classdef ProjectorU < dynamicprops & matlab.mixin.CustomDisplay
                         hObj.U = sparse(hObj.U);
                         hObj.U_calculated = true;
                     otherwise
-                        K_rep = ones(hObj.F_len, 2*hObj.F_len);
-                        F_vec = ones(size(hObj.F));
+                        K_rep = sparse(zeros(hObj.F_len, 2*hObj.F_len));
+                        F_vec = sparse(zeros(size(hObj.F)));
                         % F_tmp has F as columns repeated as many times as there are
                         % elements of F.
-                        F_tmp = (hObj.F.');
+                        F_tmp = sparse(hObj.F.');
                         F_tmp = repmat(F_tmp(:).',hObj.F_len,1);
             
-                        P_tmp = zeros(hObj.F_len, hObj.F_len);
+                        P_tmp = sparse(zeros(hObj.F_len, hObj.F_len));
         
                         irrep_num = find(hObj.projs == irrep);
     
-                        representation = zeros(hObj.F_len, hObj.F_len, 'logical');
+                        representation = sparse(zeros(hObj.F_len, hObj.F_len, 'logical'));
                         for sym_op = 1:length(hObj.ops)
                             get_representation;
                             add_representation(char_table(:,sym_op));
@@ -477,7 +477,6 @@ classdef ProjectorU < dynamicprops & matlab.mixin.CustomDisplay
                         hObj.(irrep) = pivots+size(hObj.U,2);
                         hObj.U = [hObj.U basis];
                         hObj.U = sparse(hObj.U);
-                        P_tmp(:) = 0;
                 end
                 hObj.(strcat(irrep, "_calculated")) = true;
             end
@@ -496,8 +495,8 @@ classdef ProjectorU < dynamicprops & matlab.mixin.CustomDisplay
                 % p*b_1+q*b_2
                 % and then convert back to (p,q) space afterwards.  This is
                 % what the hObj.b_vecs in the code below does.
-                F_vec = (hObj.b_vecs\(hObj.(hObj.ops(sym_op))*...
-                    (hObj.b_vecs*(hObj.F).'))).';
+                F_vec = sparse((hObj.b_vecs\(hObj.(hObj.ops(sym_op))*...
+                    (hObj.b_vecs*(hObj.F).'))).');
 
 
                 % Create representations for each of the symmetry operations
@@ -532,11 +531,13 @@ classdef ProjectorU < dynamicprops & matlab.mixin.CustomDisplay
                 %
 
                 K_rep = repmat(F_vec, [1 hObj.F_len]);
+                
                 % Stop MATLAB from converting K_out into logical values,
                 % which will ruin subsequent calcualtions.
-                K_rep = (F_tmp-K_rep)<1e-6&(F_tmp-K_rep)>-1e-6;
+                %K_rep = (F_tmp-K_rep)<1e-6&(F_tmp-K_rep)>-1e-6;
+                K_rep = abs(F_tmp-K_rep)<1e-6;
 
-                representation(:,:) = K_rep(:,1:2:end)&K_rep(:,2:2:end);
+                representation = K_rep(:,1:2:end)&K_rep(:,2:2:end);
             end
 
             function add_representation(characters)
@@ -556,7 +557,8 @@ classdef ProjectorU < dynamicprops & matlab.mixin.CustomDisplay
                     % We need to apply Gram-Schmidt process to make it
                     % orthonormal so that we can get the relationship:
                     % Proj = basis*basis';
-                    [basis,~] = mgson(basis);
+                    %[basis,~] = mgson(basis);
+                    [basis, ~] = qr(basis,0);
                     if rnk > 1
                         pivots = [1, rnk];
                     else
