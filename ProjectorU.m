@@ -305,6 +305,15 @@ classdef ProjectorU < dynamicprops & matlab.mixin.CustomDisplay
             eta = pvec'*pvec/(vec'*vec);
         end
 
+        function eta = symmetry_param_vec_field(hObj, irrep, irrep_complement, vec_x, vec_y, vec_z)
+            basis_range = hObj.(irrep)(1):hObj.(irrep)(end);
+            basis_range_complement = hObj.(irrep_complement)(1):hObj.(irrep_complement)(end);
+            pvec_x = hObj.U(:,basis_range)'*vec_x;
+            pvec_y = hObj.U(:,basis_range_complement)'*vec_y;
+            pvec_z = hObj.U(:,basis_range)'*vec_z;
+            eta = (pvec_x'*pvec_x+pvec_y'*pvec_y+pvec_z'*pvec_z)/(vec_x'*vec_x+vec_y'*vec_y+vec_z'*vec_z);
+        end
+
         function proj = projector(hObj, irrep)
             basis_range = hObj.(irrep)(1):hObj.(irrep)(end);
             proj = hObj.U(:,basis_range)*hObj.U(:,basis_range)';
