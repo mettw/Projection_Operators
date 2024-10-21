@@ -427,20 +427,21 @@ classdef ProjectorU3D < dynamicprops & matlab.mixin.CustomDisplay
                         for p = hObj.projs(1:end)
                             hObj.add_irrep(p);
                         end
+                        hObj.U = sparse(hObj.U);
                         hObj.U_calculated = true;
                     otherwise
-                        K_rep = ones(hObj.F_len, 2*hObj.F_len);
-                        F_vec = ones(size(hObj.F));
+                        K_rep = sparse(zeros(hObj.F_len, 2*hObj.F_len));
+                        F_vec = sparse((size(hObj.F)));
                         % F_tmp has F as columns repeated as many times as there are
                         % elements of F.
-                        F_tmp = (hObj.F.');
+                        F_tmp = sparse(hObj.F.');
                         F_tmp = repmat(F_tmp(:).',hObj.F_len,1);
             
-                        P_tmp = zeros(hObj.F_len, hObj.F_len);
+                        P_tmp = sparse(zeros(hObj.F_len, hObj.F_len));
         
                         irrep_num = find(hObj.projs == irrep);
     
-                        representation = zeros(hObj.F_len, hObj.F_len, 'logical');
+                        representation = sparse(zeros(hObj.F_len, hObj.F_len, 'logical'));
                         for sym_op = 1:length(hObj.ops)
                             get_representation;
                             %{
@@ -458,7 +459,7 @@ classdef ProjectorU3D < dynamicprops & matlab.mixin.CustomDisplay
     
                         hObj.(irrep) = pivots+size(hObj.U,2);
                         hObj.U = [hObj.U basis];
-                        P_tmp(:) = 0;
+                        hObj.U = sparse(hObj.U);
                 end
                 hObj.(strcat(irrep, "_calculated")) = true;
             end
@@ -477,8 +478,8 @@ classdef ProjectorU3D < dynamicprops & matlab.mixin.CustomDisplay
                 % p*b_1+q*b_2
                 % and then convert back to (p,q) space afterwards.  This is
                 % what the hObj.b_vecs in the code below does.
-                F_vec = (hObj.b_vecs\(hObj.(hObj.ops(sym_op))*...
-                    (hObj.b_vecs*(hObj.F).'))).';
+                F_vec = sparse((hObj.b_vecs\(hObj.(hObj.ops(sym_op))*...
+                    (hObj.b_vecs*(hObj.F).'))).');
 
 
                 % Create representations for each of the symmetry operations
@@ -529,7 +530,7 @@ classdef ProjectorU3D < dynamicprops & matlab.mixin.CustomDisplay
 
                 % Reduce to row echelon form to get the matrix A such that
                 % P = A*(A^T*A)^-1*A^T
-                [basis, pivots] = frref(sparse(P_tmp));
+                [basis, pivots] = frref(P_tmp);
                 rnk = length(pivots);
 
                 if rnk~= 0
