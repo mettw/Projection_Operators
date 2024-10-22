@@ -187,7 +187,7 @@ classdef ProjectorU3D < dynamicprops & matlab.mixin.CustomDisplay
                             hObj.F = [hObj.F; {[1;0]; [0; 1]; [-1; -1]}];
                             %hObj.F = [hObj.F; {[1;0]; [1; 1]; [0; 1]; [-1; 0]; [-1; -1]; [0; -1]}];
                         otherwise
-                            error("Unknown Hibert space name");
+                            error("Unknown Fourier space name");
                     end
                 end
                 %hObj.F = int16([hObj.F{:}].');
@@ -311,13 +311,27 @@ classdef ProjectorU3D < dynamicprops & matlab.mixin.CustomDisplay
         %
 
         function eta = symmetry_param(hObj, irrep, vec)
-            pvec = hObj.U(:,hObj.(irrep))'*vec;
+            basis_range = hObj.(irrep)(1):hObj.(irrep)(end);
+            pvec = hObj.U(:,basis_range)'*vec;
             eta = pvec'*pvec/(vec'*vec);
         end
 
-        function proj = projector(hObj, irrep)
+        function eta = symmetry_param_vec_field(hObj, irrep, irrep_complement, vec_x, vec_y, vec_z)
             basis_range = hObj.(irrep)(1):hObj.(irrep)(end);
-            proj = hObj.U(:,basis_range)*hObj.U(:,basis_range)';
+            basis_range_complement = hObj.(irrep_complement)(1):hObj.(irrep_complement)(end);
+            pvec_x = hObj.U(:,basis_range)'*vec_x;
+            pvec_y = hObj.U(:,basis_range_complement)'*vec_y;
+            pvec_z = hObj.U(:,basis_range)'*vec_z;
+            eta = (pvec_x'*pvec_x+pvec_y'*pvec_y+pvec_z'*pvec_z)/(vec_x'*vec_x+vec_y'*vec_y+vec_z'*vec_z);
+        end
+
+        function proj = projector(hObj, irrep)
+            if isempty(hObj.(irrep))
+                proj = [];
+            else
+                basis_range = hObj.(irrep)(1):hObj.(irrep)(end);
+                proj = hObj.U(:,basis_range)*hObj.U(:,basis_range)';
+            end
         end
 
         % Produce a vector of a given symmetry
@@ -333,6 +347,14 @@ classdef ProjectorU3D < dynamicprops & matlab.mixin.CustomDisplay
             else
                 basis_range = hObj.(varargin{1})(1):hObj.(varargin{1})(end);
                 basis = hObj.U(:,basis_range);
+            end
+        end
+
+        function dim_of_irrep = dim(hObj, irrep)
+            if isscalar(hObj.(irrep))
+                dim_of_irrep = 1;
+            else
+                dim_of_irrep = hObj.(irrep)(:,2) - hObj.(irrep)(:,1)+1;
             end
         end
 
@@ -430,18 +452,18 @@ classdef ProjectorU3D < dynamicprops & matlab.mixin.CustomDisplay
                         hObj.U = sparse(hObj.U);
                         hObj.U_calculated = true;
                     otherwise
-                        K_rep = sparse(zeros(hObj.F_len, 2*hObj.F_len));
-                        F_vec = sparse((size(hObj.F)));
+                        K_rep = sparse(hObj.F_len, 2*hObj.F_len);
+                        F_vec = sparse(zeros(size(hObj.F)));
                         % F_tmp has F as columns repeated as many times as there are
                         % elements of F.
                         F_tmp = sparse(hObj.F.');
                         F_tmp = repmat(F_tmp(:).',hObj.F_len,1);
             
-                        P_tmp = sparse(zeros(hObj.F_len, hObj.F_len));
+                        P_tmp = sparse(hObj.F_len, hObj.F_len);
         
                         irrep_num = find(hObj.projs == irrep);
     
-                        representation = sparse(zeros(hObj.F_len, hObj.F_len, 'logical'));
+                        %representation = sparse(zeros(hObj.F_len, hObj.F_len, 'logical'));
                         for sym_op = 1:length(hObj.ops)
                             get_representation;
                             %{
@@ -452,7 +474,7 @@ classdef ProjectorU3D < dynamicprops & matlab.mixin.CustomDisplay
                                 representation = hObj.(strcat(hObj.ops(sym_op), "_representation"));
                             end
                             %}
-                            add_representation(char_table(:,sym_op));
+                            %add_representation(char_table(:,sym_op));
                         end
         
                         [basis, pivots] = create_canonical_basis;
@@ -467,6 +489,7 @@ classdef ProjectorU3D < dynamicprops & matlab.mixin.CustomDisplay
             % Get a matrix representation of each symmetry operation in the
             % specified point group.
             function get_representation
+                characters = char_table(:,sym_op);
 
                 % K_out is F repeated so that there is one column of F for each
                 % symmetry operation.  The corresponding symmetry operation is
@@ -514,17 +537,20 @@ classdef ProjectorU3D < dynamicprops & matlab.mixin.CustomDisplay
                 %
 
                 K_rep = repmat(F_vec, [1 hObj.F_len]);
+                
                 % Stop MATLAB from converting K_out into logical values,
                 % which will ruin subsequent calcualtions.
-                K_rep = (F_tmp-K_rep)<1e-6&(F_tmp-K_rep)>-1e-6;
+                %K_rep = (F_tmp-K_rep)<1e-6&(F_tmp-K_rep)>-1e-6;
+                K_rep = abs(F_tmp-K_rep)<1e-6;
 
-                representation(:,:) = K_rep(:,1:3:end)&K_rep(:,2:3:end)&K_rep(:,3:3:end);
+                %representation(:,:) = K_rep(:,1:3:end)&K_rep(:,2:3:end)&K_rep(:,3:3:end);
+                P_tmp = P_tmp + (K_rep(:,1:3:end)&K_rep(:,2:3:end)&K_rep(:,3:3:end))*characters(irrep_num);
             end
-
+%{
             function add_representation(characters)
                 P_tmp = P_tmp + representation*characters(irrep_num);
             end
-
+%}
 
             function [basis, pivots] = create_canonical_basis
 
@@ -538,7 +564,8 @@ classdef ProjectorU3D < dynamicprops & matlab.mixin.CustomDisplay
                     % We need to apply Gram-Schmidt process to make it
                     % orthonormal so that we can get the relationship:
                     % Proj = basis*basis';
-                    [basis,~] = mgson(basis);
+                    %[basis,~] = mgson(basis);
+                    [basis, ~] = qr(basis,0);
                     if rnk > 1
                         pivots = [1, rnk];
                     else

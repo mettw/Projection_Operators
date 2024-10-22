@@ -1,4 +1,4 @@
-classdef ProjectorU < dynamicprops & matlab.mixin.CustomDisplay
+classdef ProjectorUs < dynamicprops & matlab.mixin.CustomDisplay
     % Projector - Create a projection operator
     %
     % Creates a projector for the specified basis and point group.
@@ -141,7 +141,7 @@ classdef ProjectorU < dynamicprops & matlab.mixin.CustomDisplay
         % SETUP functions
         %
         
-        function hObj = ProjectorU(Fourier_space, point_group, vararg)
+        function hObj = ProjectorUs(Fourier_space, point_group, vararg)
             
             if nargin == 3
                 hObj.include_y_projs = vararg{1};
@@ -468,12 +468,9 @@ classdef ProjectorU < dynamicprops & matlab.mixin.CustomDisplay
                         hObj.U = sparse(hObj.U);
                         hObj.U_calculated = true;
                     otherwise
-                        K_rep = sparse(hObj.F_len, 2*hObj.F_len);
+                        %K_rep = sparse(zeros(hObj.F_len, 2*hObj.F_len));
                         F_vec = sparse(zeros(size(hObj.F)));
-                        % F_tmp has F as columns repeated as many times as there are
-                        % elements of F.
-                        F_tmp = sparse(hObj.F.');
-                        F_tmp = repmat(F_tmp(:).',hObj.F_len,1);
+                        F_tmp = sparse(zeros(size(hObj.F)));
             
                         P_tmp = sparse(hObj.F_len, hObj.F_len);
         
@@ -497,7 +494,6 @@ classdef ProjectorU < dynamicprops & matlab.mixin.CustomDisplay
             % Get a matrix representation of each symmetry operation in the
             % specified point group.
             function get_representation
-                characters = char_table(:,sym_op);
 
                 % K_out is F repeated so that there is one column of F for each
                 % symmetry operation.  The corresponding symmetry operation is
@@ -511,48 +507,51 @@ classdef ProjectorU < dynamicprops & matlab.mixin.CustomDisplay
                 % what the hObj.b_vecs in the code below does.
                 F_vec = sparse((hObj.b_vecs\(hObj.(hObj.ops(sym_op))*...
                     (hObj.b_vecs*(hObj.F).'))).');
+    
 
+                for i = 1:hObj.F_len
+                    % F_tmp has F as columns repeated as many times as there are
+                    % elements of F.
+                    F_tmp = repmat(hObj.F(i,:),hObj.F_len,1);
 
-                % Create representations for each of the symmetry operations
-                % ----------------------------------------------------------
-                %
-                % We are creating a matrix A such that A*F performs the relevant
-                % symmetry operation on F as a vector.  To do this we take one
-                % particular column of K_out, which represents a single symmetry
-                % operation, and then repeat that column as, for example:
-                %
-                % [2;3;1] -> [2 2 2;3 3 3;1 1 1]
-                %
-                % and then compare this to F.'=[1 2 3] to get a matrix of the form
-                %
-                % [F.'; F.'; F.'] - [2 2 2;3 3 3;1 1 1] = [-1 0 1; -2 -1 0; 0 -1 -2]
-                %
-                % If we then take the negation of this result we get
-                %
-                % not([-1 0 1; -2 -1 0; 0 -1 -2]) = [0 1 0; 0 0 1; 1 0 0]
-                %
-                % which is the representation we were after since
-                %
-                % [0 1 0; 0 0 1; 1 0 0]*[1;2;3] = [2;3;1]
-                %
-                % Which matches the initial vector above.
-                %
-                % In reality it is a little more complicated since the actual form
-                % of F has two columns, one for the x coord and one for the y coord
-                % such as
-                %
-                % F = [1 0; 0 1; -1 0; 0 -1]
-                %
-
-                K_rep = repmat(F_vec, [1 hObj.F_len]);
-                
-                % Stop MATLAB from converting K_out into logical values,
-                % which will ruin subsequent calcualtions.
-                %K_rep = (F_tmp-K_rep)<1e-6&(F_tmp-K_rep)>-1e-6;
-                K_rep = abs(F_tmp-K_rep)<1e-6;
-
-                %representation = K_rep(:,1:2:end)&K_rep(:,2:2:end);
-                P_tmp = P_tmp + (K_rep(:,1:2:end)&K_rep(:,2:2:end))*characters(irrep_num);
+                    % Create representations for each of the symmetry operations
+                    % ----------------------------------------------------------
+                    %
+                    % We are creating a matrix A such that A*F performs the relevant
+                    % symmetry operation on F as a vector.  To do this we take one
+                    % particular column of K_out, which represents a single symmetry
+                    % operation, and then repeat that column as, for example:
+                    %
+                    % [2;3;1] -> [2 2 2;3 3 3;1 1 1]
+                    %
+                    % and then compare this to F.'=[1 2 3] to get a matrix of the form
+                    %
+                    % [F.'; F.'; F.'] - [2 2 2;3 3 3;1 1 1] = [-1 0 1; -2 -1 0; 0 -1 -2]
+                    %
+                    % If we then take the negation of this result we get
+                    %
+                    % not([-1 0 1; -2 -1 0; 0 -1 -2]) = [0 1 0; 0 0 1; 1 0 0]
+                    %
+                    % which is the representation we were after since
+                    %
+                    % [0 1 0; 0 0 1; 1 0 0]*[1;2;3] = [2;3;1]
+                    %
+                    % Which matches the initial vector above.
+                    %
+                    % In reality it is a little more complicated since the actual form
+                    % of F has two columns, one for the x coord and one for the y coord
+                    % such as
+                    %
+                    % F = [1 0; 0 1; -1 0; 0 -1]
+                    %
+                    
+                    K_rep = abs(F_tmp-F_vec)<1e-6;
+    
+                    %representation = K_rep(:,1:2:end)&K_rep(:,2:2:end);
+                    %representation(:,i) = K_rep(:,1)&K_rep(:,2);
+                    characters = char_table(:,sym_op);
+                    P_tmp(:,i) = P_tmp(:,i) + (K_rep(:,1)&K_rep(:,2))*characters(irrep_num);
+                end
             end
 %{
             function add_representation(characters)
