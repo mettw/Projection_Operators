@@ -268,7 +268,25 @@ classdef Field3D < handle
         end
 
         function plot(obj, varargin)
-
+            % Create an input parser object
+            p = inputParser;
+        
+            % Define parameters and their default values
+            %addRequired(p, 'x', @isnumeric);  % x is a required numeric parameter
+            addParameter(p, 'step_size', 1, @isnumeric);  % Optional parameter with default value
+            addParameter(p, 'quiver_varargin', {'k'}, @iscell);  % Optional parameter with default value
+            addParameter(p, 'z', 0, @isnumeric);  % Optional parameter with default value
+        
+            % Parse input arguments
+            %parse(p, x, vararg{:});
+            parse(p, varargin{:});
+        
+            % Access the parsed inputs
+            %x = p.Results.x;
+            step_size = p.Results.step_size;
+            quiver_varargin = p.Results.quiver_varargin;
+            z_plane = p.Results.z;
+    %{
             if nargin == 2
                 step_size = varargin{1};
             elseif nargin > 2
@@ -278,16 +296,22 @@ classdef Field3D < handle
                 step_size = 1;
                 quiver_varargin = {'k'};
             end
-
+    %}
             norm2d = obj.norm;
 
             figure;
-            for z_plane_num = 1:length(unique(obj.z))
-                surf(squeeze(obj.x(:,:,z_plane_num)), squeeze(obj.y(:,:,z_plane_num)), ...
-                    squeeze(obj.z(:,:,z_plane_num)), ...
-                    squeeze(norm2d(:,:,z_plane_num)), 'EdgeColor','none')
-                hold on;
+            if z_plane == 0
+                for z_plane_num = 1:length(unique(obj.z))
+                    surf(squeeze(obj.x(:,:,z_plane_num)), squeeze(obj.y(:,:,z_plane_num)), ...
+                        squeeze(obj.z(:,:,z_plane_num)), ...
+                        squeeze(norm2d(:,:,z_plane_num)), 'EdgeColor','none')
+                end
+            else
+                surf(squeeze(obj.x(:,:,z_plane)), squeeze(obj.y(:,:,z_plane)), ...
+                    squeeze(obj.z(:,:,z_plane)), ...
+                    squeeze(norm2d(:,:,z_plane)), 'EdgeColor','none')
             end
+            hold on;
 
             set(gca, 'FontSize', 20)
             %view([0 90])
@@ -301,13 +325,26 @@ classdef Field3D < handle
             xlim([obj.x(1,1) obj.x(1,end)])
             ylim([obj.y(end,1) obj.y(1,1)])
 
-            for z_plane_num = 1:length(unique(obj.z))
-                Ex2D = squeeze(obj.Ex(:,:,z_plane_num));
-                Ey2D = squeeze(obj.Ey(:,:,z_plane_num));
-                Ez2D = squeeze(obj.Ez(:,:,z_plane_num));
-                x2D = squeeze(obj.x(:,:,z_plane_num));
-                y2D = squeeze(obj.y(:,:,z_plane_num));
-                z2D = squeeze(obj.z(:,:,z_plane_num));
+            if z_plane == 0
+                for z_plane_num = 1:length(unique(obj.z))
+                    Ex2D = squeeze(obj.Ex(:,:,z_plane_num));
+                    Ey2D = squeeze(obj.Ey(:,:,z_plane_num));
+                    Ez2D = squeeze(obj.Ez(:,:,z_plane_num));
+                    x2D = squeeze(obj.x(:,:,z_plane_num));
+                    y2D = squeeze(obj.y(:,:,z_plane_num));
+                    z2D = squeeze(obj.z(:,:,z_plane_num));
+                    quiver3(x2D(1:step_size:end), y2D(1:step_size:end), z2D(1:step_size:end), ...
+                        real(Ex2D(1:step_size:end)), ...
+                        real(Ey2D(1:step_size:end)), real(Ez2D(1:step_size:end)), ...
+                        quiver_varargin{:})
+                end
+            else
+                Ex2D = squeeze(obj.Ex(:,:,z_plane));
+                Ey2D = squeeze(obj.Ey(:,:,z_plane));
+                Ez2D = squeeze(obj.Ez(:,:,z_plane));
+                x2D = squeeze(obj.x(:,:,z_plane));
+                y2D = squeeze(obj.y(:,:,z_plane));
+                z2D = squeeze(obj.z(:,:,z_plane));
                 quiver3(x2D(1:step_size:end), y2D(1:step_size:end), z2D(1:step_size:end), ...
                     real(Ex2D(1:step_size:end)), ...
                     real(Ey2D(1:step_size:end)), real(Ez2D(1:step_size:end)), ...

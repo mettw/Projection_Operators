@@ -160,7 +160,24 @@ classdef ScalarFieldU3D < handle
                 (double(obj.fn(:))'*double(normoprtr)*double(obj.fn(:)));
         end
 
-        function plot(obj, vararg)
+        function plot(obj, varargin)
+            % Create an input parser object
+            p = inputParser;
+        
+            % Define parameters and their default values
+            %addRequired(p, 'x', @isnumeric);  % x is a required numeric parameter
+            addParameter(p, 'cb_str', [], @ischar);  % Optional parameter with default value
+            addParameter(p, 'z', 0, @isnumeric);  % Optional parameter with default value
+        
+            % Parse input arguments
+            %parse(p, x, vararg{:});
+            parse(p, varargin{:});
+        
+            % Access the parsed inputs
+            %x = p.Results.x;
+            z_plane = p.Results.z;
+            cb_str = p.Results.cb_str;
+    %{
             switch nargin
                 case 1
                     cb_str = [];
@@ -169,19 +186,26 @@ classdef ScalarFieldU3D < handle
                 otherwise
                     error("Too many arguments.");
             end
-            obj.plot_fn(real(obj.fn), "Real part", cb_str);
+    %}
+            
+            obj.plot_fn(real(obj.fn), "Real part", cb_str, z_plane);
             if ~isreal(obj.fn)
-                obj.plot_fn(imag(obj.fn), "Imaginary part", cb_str);
+                obj.plot_fn(imag(obj.fn), "Imaginary part", cb_str, z_plane);
             end
         end
 
-        function plot_fn(obj, real_fn, title_str, cb_str)
+        function plot_fn(obj, real_fn, title_str, cb_str, z_plane)
             figure;
-            for i = 1:obj.size_z
-                surf(obj.x(:,:,i),obj.y(:,:,i),obj.z(:,:,i), real_fn(:,:,i), 'EdgeColor','none')
-                %surf(obj.x,obj.y,real_fn, real_fn, 'EdgeColor','none')
-                hold on;
+            if z_plane == 0
+                for i = 1:obj.size_z
+                    surf(obj.x(:,:,i),obj.y(:,:,i),obj.z(:,:,i), real_fn(:,:,i), 'EdgeColor','none')
+                    %surf(obj.x,obj.y,real_fn, real_fn, 'EdgeColor','none')
+                end
+            else
+                surf(obj.x(:,:,z_plane),obj.y(:,:,z_plane),obj.z(:,:,z_plane), real_fn(:,:,z_plane), ...
+                    'EdgeColor','none')
             end
+            hold on;
 
             xlabel('$x_1$', 'FontSize', 18, 'Interpreter', 'latex')
             ylabel('$x_2$', 'FontSize', 18, 'Interpreter', 'latex')
