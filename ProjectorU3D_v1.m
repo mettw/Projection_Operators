@@ -1,4 +1,4 @@
-classdef ProjectorU < dynamicprops & matlab.mixin.CustomDisplay
+classdef ProjectorU3D_v1 < dynamicprops & matlab.mixin.CustomDisplay
     % Projector - Create a projection operator
     %
     % Creates a projector for the specified basis and point group.
@@ -24,16 +24,16 @@ classdef ProjectorU < dynamicprops & matlab.mixin.CustomDisplay
     %
     % Alternatively you can name a standard basis such as
     %
-    % > P=Projector("G1", "C4v")
+    % > P=Projector("F1", "C4v")
     %
     % or a set of standard bases (Note the use of square brackets in this
     % case)
     %
-    % > P=Projector(["G0" "G1" "G2"], "C4v")
+    % > P=Projector(["F0" "F1" "F2"], "C4v")
     %
     % and for C6v 
     %
-    % > P=Projector("G1_hex", "C6v")
+    % > P=Projector("F1_hex", "C6v")
     %
     % Note that because of the long run time for large bases the
     % constructor does not automatically build any of the projectors,
@@ -93,7 +93,7 @@ classdef ProjectorU < dynamicprops & matlab.mixin.CustomDisplay
         F;
         F_len;
         % reciprocal space basis vectors (square by default)
-        b_vecs = [1 0;0 1];
+        b_vecs = [1 0 0;0 1 0; 0 0 1];
 
         projs; % Names of the projectors to create
         ops; % Names of the symmetry operations
@@ -101,37 +101,23 @@ classdef ProjectorU < dynamicprops & matlab.mixin.CustomDisplay
         U_calculated = false;
 
         % Point group operators
-        E_1 = ([1 0;0 1]);
-        C6_1 = ([1/2 -sqrt(3)/2;sqrt(3)/2 1/2]);
-        C6_5 = ([1/2 sqrt(3)/2;-sqrt(3)/2 1/2]);
-        C4_1 = ([0 -1;1 0]);
-        C4_3 = ([0 1;-1 0]);
-        C3_1 = ([-1/2 -sqrt(3)/2;sqrt(3)/2 -1/2]);
-        C3_2 = ([-1/2 sqrt(3)/2;-sqrt(3)/2 -1/2]);
-        C2_1 = ([-1 0;0 -1]);
-        sigma_v_x = ([1 0;0 -1]);
-        sigma_v_y = ([-1 0;0 1]);
-        sigma_d_d = ([0 1;1 0]);
-        sigma_d_a = ([0 -1;-1 0]);
-        % Hexagonal mirror symmetries
-        sigma_v_1 = ([1 0;0 -1]);
-        sigma_v_2 = ([1/4-3/4 2*1/2*sqrt(3)/2;2*1/2*sqrt(3)/2 3/4-1/4]);
-        sigma_v_3 = ([1/4-3/4 -2*1/2*sqrt(3)/2;-2*1/2*sqrt(3)/2 3/4-1/4]);
-        sigma_d_1 = ([3/4-1/4 2*1/2*sqrt(3)/2;2*1/2*sqrt(3)/2 1/4-3/4]);
-        sigma_d_2 = ([-1 0;0 1]);
-        sigma_d_3 = ([3/4-1/4 -2*1/2*sqrt(3)/2;-2*1/2*sqrt(3)/2 1/4-3/4]);
-        %"mE_1" "mC4_1" "mC4_3" "mC2_1" "msigma_v_x" "msigma_v_y" "msigma_d_d" "msigma_d_a"
-        % Negation of the operators for groups with inversion, since in the
-        % 2D plane inversion is equivalent to a negation of the
-        % coordinates.  ie, in 2D you multiply by [-1 0; 0 -1] == -I.
-        mE_1 = -([1 0;0 1]);
-        mC4_1 = -([0 -1;1 0]);
-        mC4_3 = -([0 1;-1 0]);
-        mC2_1 = -([-1 0;0 -1]);
-        msigma_v_x = -([1 0;0 -1]);
-        msigma_v_y = -([-1 0;0 1]);
-        msigma_d_d = -([0 1;1 0]);
-        msigma_d_a = -([0 -1;-1 0]);
+        E_1 = [1 0 0;0 1 0; 0 0 1];
+        C4_1 = [0 -1 0;1 0 0; 0 0 1];
+        sigma_v_x = [1 0 0;0 -1 0; 0 0 1];
+        i_op = [-1 0 0; 0 -1 0; 0 0 -1];
+
+        C4_3 = [];
+        C2_1 = [];
+        sigma_v_y = [];
+        sigma_d_d = [];
+        sigma_d_a = [];
+        S4_1 = [];
+        S4_3 = [];
+        sigma_h = [];
+        C2p_x = [];
+        C2p_y = [];
+        C2pp_d = [];
+        C2pp_a = [];
 
         point_group;
     end
@@ -141,7 +127,9 @@ classdef ProjectorU < dynamicprops & matlab.mixin.CustomDisplay
         % SETUP functions
         %
         
-        function hObj = ProjectorU(Fourier_space, point_group, vararg)
+        function hObj = ProjectorU3D_v1(Fourier_space, point_group, vararg)
+            
+            hObj.create_operator_matrices;
             
             if nargin == 3
                 hObj.include_y_projs = vararg{1};
@@ -151,11 +139,15 @@ classdef ProjectorU < dynamicprops & matlab.mixin.CustomDisplay
                 for F_i=Fourier_space
                     switch lower(F_i)
                         case "g0"
-                            hObj.F = [hObj.F; {[0; 0]}];
+                            hObj.F = [hObj.F; {[0; 0; 0]}];
                         case "g1"
-                            hObj.F = [hObj.F; {[1; 0]; [0; 1]; [-1; 0]; [0; -1]}];
+                            hObj.F = [hObj.F; {[1; 0; 0]; [0; 1; 0]; [0; 0; 1]; ...
+                                [-1; 0; 0]; [0; -1; 0]; [0; 0; -1]}];
                         case "g2"
-                            hObj.F = [hObj.F; {[1; 1]; [-1; 1]; [-1; -1]; [1; -1]}];
+                            hObj.F = [hObj.F; {[1; 0; 1]; [0; 1; 1]; [-1; 0; 1]; [0; -1; 1];...
+                                [1; 1; 0]; [-1; 1; 0]; [-1; -1; 0]; [1; -1; 0];...
+                                [1; 0; -1]; [0; 1; -1]; [-1; 0; -1];[0; -1; -1]}];
+                   
                         case "g3"
                             hObj.F = [hObj.F; {[2; 0]; [0; 2]; [-2; 0]; [0; -2]}];
                         case "g4"
@@ -209,9 +201,9 @@ classdef ProjectorU < dynamicprops & matlab.mixin.CustomDisplay
                 hObj.F_len = length(hObj.F);
             elseif isfloat(Fourier_space) % a square array of values
                 sz = size(Fourier_space);
-                hObj.F_len = sz(1)*sz(2);
+                hObj.F_len = sz(1)*sz(2)*sz(3);
                 %hObj.F = reshape(int16(Fourier_space),[hObj.F_len 2]);
-                hObj.F = reshape((Fourier_space),[hObj.F_len 2]);
+                hObj.F = reshape((Fourier_space),[hObj.F_len 3]);
                 %hObj.F = Fourier_space;
                 %hObj.F_len = length(hObj.F);
             else % Fourier_space is a cell array of [m,n]
@@ -248,17 +240,14 @@ classdef ProjectorU < dynamicprops & matlab.mixin.CustomDisplay
                     hObj.ops = ["E_1" "sigma_v_y"];
                     hObj.projs = ["A1" "A2"];
                 case "c2"
-                    hObj.ops = ["E_1" "C2_1"];
+                    hObj.ops = ["E_1" "C2_z"];
                     hObj.projs = ["A" "B"];
                 case "c2v"
-                    hObj.ops = ["E_1" "C2_1" "sigma_v_x" "sigma_v_y"];
+                    hObj.ops = ["E_1" "C2_z" "sigma_v_x" "sigma_v_y"];
                     hObj.projs = ["A1" "A2" "B1" "B2"];
                 case "c2v_d"
-                    hObj.ops = ["E_1" "C2_1" "sigma_d_d" "sigma_d_a"];
+                    hObj.ops = ["E_1" "C2_z" "sigma_d_d" "sigma_d_a"];
                     hObj.projs = ["A1" "A2" "B1" "B2"];
-                case "c3v"
-                    hObj.ops = ["E_1" "C3_1" "C3_2" "sigma_v_1" "sigma_v_2" "sigma_v_3"];
-                    hObj.projs = ["A1" "A2" "E_11" "E_22" "E"];
                 case "c4"
                     hObj.ops = ["E_1" "C4_1" "C4_3" "C2_1"];
                     hObj.projs = ["A" "B" "E_11" "E_22" "E"];
@@ -268,21 +257,27 @@ classdef ProjectorU < dynamicprops & matlab.mixin.CustomDisplay
                 case "c4v_d"
                     hObj.ops = ["E_1" "C4_1" "C4_3" "C2_1" "sigma_d_d" "sigma_d_a" "sigma_v_x" "sigma_v_y"];
                     hObj.projs = ["A1" "A2" "B1" "B2" "E_11" "E_22" "E"];
-                case "c6v"
-                    hObj.ops = ["E_1" "C6_1" "C6_5" "C3_1" "C3_2" "C2_1" "sigma_v_1" "sigma_v_2" "sigma_v_3" ...
-                        "sigma_d_1" "sigma_d_2" "sigma_d_3"];
-                    hObj.projs = ["A1" "A2" "B1" "B2" ...
-                        "E1_11" "E1_22" "E1" ...
-                        "E2_11" "E2_22" "E2"];
-                case "d2h"
-                    hObj.ops = ["E_1" "C2_1" "sigma_v_x" "sigma_v_y" ...
-                        "mE_1" "mC2_1" "msigma_v_x" "msigma_v_y"];
-                    hObj.projs = ["Ag" "B1g" "B2g" "B3g" "Au" "B1u" "B2u" "B3u"];
-                case "d4h"
-                    hObj.ops = ["E_1" "C4_1" "C4_3" "C2_1" "sigma_v_x" "sigma_v_y" "sigma_d_d" "sigma_d_a" ...
-                        "mE_1" "mC4_1" "mC4_3" "mC2_1" "msigma_v_x" "msigma_v_y" "msigma_d_d" "msigma_d_a"];
-                    hObj.projs = ["A1g" "A2g" "B1g" "B2g" "E_11g" "E_22g" "Eg" ...
-                        "A1u" "A2u" "B1u" "B2u" "E_11u" "E_22u" "Eu"];
+                    case "d2h"
+                        hObj.ops = ["E_1" "C2_1" "C2p_y" "C2p_x" ...
+                            "i_op" "sigma_h" "sigma_v_x" "sigma_v_y"];
+                        hObj.projs = ["Ag" "B1g" "B2g" "B3g" "Au" "B1u" "B2u" "B3u"];
+                    case "d2h_d"
+                        hObj.ops = ["E_1" "C2_1" "C2pp_a" "C2pp_d" ...
+                            "i_op" "sigma_h" "sigma_d_d" "sigma_d_a"];
+                        hObj.projs = ["Ag" "B1g" "B2g" "B3g" "Au" "B1u" "B2u" "B3u"];
+                    case "d4h"
+                        hObj.ops = ["E_1" "C4_1" "C4_3" "C2_1" "C2p_y" "C2p_x" "C2pp_a" "C2pp_d" ...
+                            "i_op" "S4_1" "S4_3" "sigma_h" "sigma_v_x" "sigma_v_y" "sigma_d_d" "sigma_d_a"];
+                        hObj.projs = ["A1g" "A2g" "B1g" "B2g" "E_11g" "E_22g" "Eg" ...
+                            "A1u" "A2u" "B1u" "B2u" "E_11u" "E_22u" "Eu"];
+                    case "d4h_d"
+                        hObj.ops = ["E_1" "C4_1" "C4_3" "C2_1" "C2pp_a" "C2pp_d" "C2p_y" "C2p_x" ...
+                            "i_op" "S4_1" "S4_3" "sigma_h" "sigma_d_d" "sigma_d_a" "sigma_v_x" "sigma_v_y"];
+                        hObj.projs = ["A1g" "A2g" "B1g" "B2g" "E_11g" "E_22g" "Eg" ...
+                            "A1u" "A2u" "B1u" "B2u" "E_11u" "E_22u" "Eu"];
+                    case "s4"
+                        hObj.ops = ["E_1" "S4_1" "S4_3" "C2_1"];
+                        hObj.projs = ["A" "B" "E_11" "E_22" "E"];
                 otherwise
                     error("Projector: Unkown group")
             end
@@ -292,6 +287,22 @@ classdef ProjectorU < dynamicprops & matlab.mixin.CustomDisplay
                 addprop(hObj, strcat(p, "_calculated"));
                 hObj.(strcat(p, "_calculated")) = false;
             end
+        end
+
+        function create_operator_matrices(hObj)
+
+            hObj.C4_3 = hObj.C4_1^3;
+            hObj.C2_1 = hObj.C4_1^2;
+            hObj.sigma_v_y = hObj.sigma_v_x*hObj.C2_1;
+            hObj.sigma_d_d = hObj.C4_1*hObj.sigma_v_x;
+            hObj.sigma_d_a = hObj.C4_3*hObj.sigma_v_x;
+            hObj.S4_1 = hObj.i_op*hObj.C4_1;
+            hObj.S4_3 = hObj.i_op*hObj.C4_3;
+            hObj.sigma_h = hObj.i_op*hObj.C2_1;
+            hObj.C2p_y = hObj.i_op*hObj.sigma_v_x;
+            hObj.C2p_x = hObj.i_op*hObj.sigma_v_y;
+            hObj.C2pp_a = hObj.i_op*hObj.sigma_d_d;
+            hObj.C2pp_d = hObj.i_op*hObj.sigma_d_a;
         end
 
         %%
@@ -374,22 +385,12 @@ classdef ProjectorU < dynamicprops & matlab.mixin.CustomDisplay
                            1  1 -1 -1;...
                            1 -1  1 -1;...
                            1 -1 -1  1];
-                case "c4"
+                case {"c4" "s4"}
                     out = [1  1  1  1;...
                            1 -1  -1   1;...
                            1  1i -1i -1;...
                            1 -1i  1i -1;...
                            2  0   0  -2];
-                case "c3v"
-                    c=1/2;
-                    %s=sqrt(3)/2;
-                    %      1  2  3  4  5  6 
-                    out = [1  1  1  1  1  1;...
-                           1  1  1  -1 -1 -1 ;...
-
-                           1 -c -c  1 -c -c;...
-                           1 -c -c -1  c  c;...
-                           2 -1 -1  0  0  0 ];
                 case {"c4v", "c4v_d"}
                     %      1  2  3  4  5  6  7  8
                     out = [1  1  1  1  1  1  1  1;...
@@ -403,30 +404,13 @@ classdef ProjectorU < dynamicprops & matlab.mixin.CustomDisplay
                            % E_11; E_22; E_12; E_21; E
                            1  0  0 -1  1 -1  0  0;...
                            1  0  0 -1 -1  1  0  0;...
-                           0 -1  1  0  0  0  1 -1;...
-                           0  1 -1  0  0  0  1 -1;...
+                           %0 -1  1  0  0  0  1 -1;...
+                           %0  1 -1  0  0  0  1 -1;...
                            2  0  0 -2  0  0  0  0];
-                case "c6v"
-                    % "E_1" "C6_1" "C6_5" "C3_1" "C3_2" "C2_1" "sigma_v_1" "sigma_v_2" "sigma_v_3" ...
-                    % "sigma_d_1" "sigma_d_2" "sigma_d_3"
-                    c=1/2;
-                    %s=sqrt(3)/2;
-                    out = [1    1   1     1    1    1    1  1  1    1  1  1;...
-                           1    1   1     1    1    1   -1 -1 -1   -1 -1 -1;...
-                           1   -1  -1     1    1   -1    1  1  1   -1 -1 -1;...
-                           1   -1  -1     1    1   -1   -1 -1 -1    1  1  1;...
-
-                           1    c   c    -c   -c   -1    1 -c -c    c -1  c;...
-                           1    c   c    -c   -c   -1   -1  c  c   -c  1 -c;...
-                           2  2*c 2*c  -2*c -2*c   -2    0  0  0    0  0  0;...
-
-                           1   -c   -c   -c   -c    1    1 -c -c   -c  1 -c;...
-                           1   -c   -c   -c   -c    1   -1  c  c    c -1  c;...
-                           2 -2*c -2*c -2*c -2*c    2    0  0  0    0  0  0];
-                case "d2h"
+                case {"d2h" "d2h_d"}
                     d2 = hObj.get_char_table("C2v");
                     out = [d2 d2;d2 -d2];
-                case "d4h"
+                case {"d4h" "d4h_d"}
                     d4 = hObj.get_char_table("C4v");
                     out = [d4 d4;d4 -d4];
                 otherwise
@@ -482,6 +466,14 @@ classdef ProjectorU < dynamicprops & matlab.mixin.CustomDisplay
                         %representation = sparse(zeros(hObj.F_len, hObj.F_len, 'logical'));
                         for sym_op = 1:length(hObj.ops)
                             get_representation;
+                            %{
+                            if ~isprop(hObj, strcat(hObj.ops(sym_op), "_representation"))
+                                addprop(hObj, strcat(hObj.ops(sym_op), "_representation"));
+                                hObj.(strcat(hObj.ops(sym_op), "_representation")) = representation;
+                            else
+                                representation = hObj.(strcat(hObj.ops(sym_op), "_representation"));
+                            end
+                            %}
                             %add_representation(char_table(:,sym_op));
                         end
         
@@ -551,8 +543,8 @@ classdef ProjectorU < dynamicprops & matlab.mixin.CustomDisplay
                 %K_rep = (F_tmp-K_rep)<1e-6&(F_tmp-K_rep)>-1e-6;
                 K_rep = abs(F_tmp-K_rep)<1e-6;
 
-                %representation = K_rep(:,1:2:end)&K_rep(:,2:2:end);
-                P_tmp = P_tmp + (K_rep(:,1:2:end)&K_rep(:,2:2:end))*characters(irrep_num);
+                %representation(:,:) = K_rep(:,1:3:end)&K_rep(:,2:3:end)&K_rep(:,3:3:end);
+                P_tmp = P_tmp + (K_rep(:,1:3:end)&K_rep(:,2:3:end)&K_rep(:,3:3:end))*characters(irrep_num);
             end
 %{
             function add_representation(characters)
